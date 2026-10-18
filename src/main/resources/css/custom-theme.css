@@ -1,0 +1,60 @@
+/* ==========================================================================
+   custom-theme.css - Thème applicatif MonBudget
+   ========================================================================== */
+
+/* Cellules numériques monétaires */
+.money-cell {
+    -fx-font-family: "Consolas", "SF Mono", "Menlo", monospace;
+    -fx-alignment: CENTER-RIGHT;
+}
+
+.money-cell-expense {
+    -fx-text-fill: #dc3545;
+    -fx-font-weight: bold;
+}
+
+.money-cell-income {
+    -fx-text-fill: #28a745;
+    -fx-font-weight: bold;
+}
+
+/* Badges de statut comptable */
+.badge-status {
+    -fx-padding: 3px 8px;
+    -fx-background-radius: 4px;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.badge-settled {
+    -fx-background-color: #d4edda;
+    -fx-text-fill: #155724;
+}
+
+.badge-planned {
+    -fx-background-color: #fff3cd;
+    -fx-text-fill: #856404;
+}
+
+/* Personnalisation des tableaux */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #dee2e6;
+    -fx-border-radius: 4px;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: transparent transparent #dee2e6 transparent;
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+}
+
+.table-row-cell:filled:hover {
+    -fx-background-color: #f1f3f5;
+}
+
+.table-row-cell:filled:selected {
+    -fx-background-color: #e7f1ff;
+    -fx-text-fill: #000000;
+}
