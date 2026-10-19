@@ -3,9 +3,15 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
+
+
+# Bases de données SQLite locales et journaux WAL
 *.db
 *.db-wal
 *.db-shm
+*.sqlite
+*.sqlite3
+
 .idea/
 *.iml
 .vscode/
