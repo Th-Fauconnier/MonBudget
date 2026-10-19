@@ -8,7 +8,7 @@
 ![Flyway](https://img.shields.io/badge/Migrations-Flyway%2010-red.svg)
 ![BootstrapFX](https://img.shields.io/badge/UI-BootstrapFX%200.4.0-purple.svg)
 ![AssertJ](https://img.shields.io/badge/AssertJ-3.27.7-red.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
+![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
 ---
 
@@ -179,3 +179,7 @@ Retrouvez les spécifications complètes dans le dossier [`docs/`](docs/) :
 * GitHub : [@Th-Fauconnier](https://github.com/Th-Fauconnier)
 * LinkedIn : [Thierry Fauconnier](https://www.linkedin.com/in/thierry-fauconnier-89233a213)
 * Email : [th.fauconnier@outlook.fr](mailto:th.fauconnier@outlook.fr)
+
+📄 Licence
+
+Ce projet est sous licence GPLv3. Pour plus de détails, consultez le fichier [LICENSE](LICENSE.md)).
