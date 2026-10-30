@@ -51,9 +51,7 @@ public final class UiUtils {
         comboBox.setButtonCell(typeCellFactory.call(null));
 
         // Écouteur pour adapter dynamiquement le fond du ComboBox principal
-        comboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-            updateComboBoxBackgroundStyle(comboBox, newVal);
-        });
+        comboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateComboBoxBackgroundStyle(comboBox, newVal));
 
         // Valeur par défaut initiale
         if (comboBox.getValue() == null) {
