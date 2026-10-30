@@ -21,42 +21,39 @@
 
     <!-- En-tête : Sélecteur de compte, boutons d'action rapide et filtres temporels -->
     <top>
-        <VBox spacing="15.0" style="-fx-background-color: #ffffff; -fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;">
+        <VBox spacing="15.0"
+              style="-fx-background-color: #ffffff; -fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;">
             <padding>
-                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0"/>
             </padding>
-            <children>
-                <HBox alignment="CENTER_LEFT" spacing="12.0">
-                    <children>
-                        <Label style="-fx-font-size: 18px;" text="📖" />
-                        <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #495057;" text="Compte :" />
-                        <!-- Sélecteur direct de compte/livre -->
-                        <ComboBox fx:id="bookComboBox" prefWidth="220.0" promptText="Choisir un compte..." />
+            <HBox alignment="CENTER_LEFT" spacing="12.0">
+                <Label style="-fx-font-size: 18px;" text="📖"/>
+                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #495057;" text="Compte :"/>
+                <!-- Sélecteur direct de compte/livre -->
+                <ComboBox fx:id="bookComboBox" prefWidth="220.0" promptText="Choisir un compte..."/>
 
-                        <!-- Bouton création de compte -->
-                        <Button onAction="#handleNewBook" styleClass="btn, btn-default, btn-sm" text="➕ Nouveau compte" />
-                        <!-- Bouton création de catégorie -->
-                        <Button onAction="#handleNewCategory" styleClass="btn, btn-default, btn-sm" text="🏷️ Nouvelle catégorie" />
+                <!-- Bouton création de compte -->
+                <Button onAction="#handleNewBook" styleClass="btn, btn-default, btn-sm" text="➕ Nouveau compte"/>
+                <!-- Bouton création de catégorie -->
+                <Button onAction="#handleNewCategory" styleClass="btn, btn-default, btn-sm"
+                        text="🏷️ Nouvelle catégorie"/>
 
-                        <ProgressIndicator fx:id="loadingIndicator" maxHeight="18.0" maxWidth="18.0" visible="false" />
-                        <Region HBox.hgrow="ALWAYS" />
+                <ProgressIndicator fx:id="loadingIndicator" maxHeight="18.0" maxWidth="18.0" visible="false"/>
+                <Region HBox.hgrow="ALWAYS"/>
 
-                        <!-- Bouton d'ajout d'écriture -->
-                        <Button onAction="#handleNewOperation" styleClass="btn, btn-primary" text="➕ Nouvelle opération" />
-                    </children>
-                </HBox>
+                <!-- Bouton d'ajout d'écriture -->
+                <Button onAction="#handleNewOperation" styleClass="btn, btn-primary" text="➕ Nouvelle opération"/>
+            </HBox>
 
-                <!-- Barre de filtrage par période -->
-                <HBox alignment="CENTER_LEFT" spacing="10.0">
-                    <children>
-                        <Label styleClass="text-muted" text="Période du :" />
-                        <DatePicker fx:id="startDatePicker" prefWidth="130.0" />
-                        <Label styleClass="text-muted" text="au :" />
-                        <DatePicker fx:id="endDatePicker" prefWidth="130.0" />
-                        <Button onAction="#loadDashboardDataAsync" styleClass="btn, btn-default, btn-sm" text="🔄 Actualiser" />
-                    </children>
-                </HBox>
-            </children>
+            <!-- Barre de filtrage par période -->
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label styleClass="text-muted" text="Période du :"/>
+                <DatePicker fx:id="startDatePicker" prefWidth="130.0"/>
+                <Label styleClass="text-muted" text="au :"/>
+                <DatePicker fx:id="endDatePicker" prefWidth="130.0"/>
+                <Button onAction="#loadDashboardDataAsync" styleClass="btn, btn-default, btn-sm"
+                        text="🔄 Actualiser"/>
+            </HBox>
         </VBox>
     </top>
 
@@ -64,89 +61,94 @@
     <center>
         <VBox spacing="20.0">
             <padding>
-                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
             </padding>
-            <children>
-                <!-- Cartes KPI -->
-                <HBox spacing="15.0">
-                    <children>
-                        <VBox HBox.hgrow="ALWAYS" styleClass="kpi-card" style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 15px;">
-                            <children>
-                                <Label styleClass="text-muted" style="-fx-font-size: 11px; -fx-font-weight: bold;" text="SOLDE RÉALISÉ (EFFECTIF)" />
-                                <Label fx:id="settledBalanceLabel" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #28a745;" text="0,00 €" />
-                            </children>
-                        </VBox>
-
-                        <VBox HBox.hgrow="ALWAYS" styleClass="kpi-card" style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 15px;">
-                            <children>
-                                <Label styleClass="text-muted" style="-fx-font-size: 11px; -fx-font-weight: bold;" text="NET DES FLUX À VENIR" />
-                                <Label fx:id="netPlannedLabel" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #ffc107;" text="0,00 €" />
-                            </children>
-                        </VBox>
-
-                        <VBox HBox.hgrow="ALWAYS" styleClass="kpi-card" style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 15px;">
-                            <children>
-                                <Label styleClass="text-muted" style="-fx-font-size: 11px; -fx-font-weight: bold;" text="SOLDE PROJETÉ ESTIMÉ" />
-                                <Label fx:id="projectedBalanceLabel" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #007bff;" text="0,00 €" />
-                            </children>
-                        </VBox>
-                    </children>
-                </HBox>
-
-                <!-- Section Graphiques -->
-                <HBox prefHeight="220.0" spacing="15.0">
-                    <children>
-                        <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 10px;">
-                            <children>
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: #212529;" text="Trajectoire et prévisions de trésorerie" />
-                                <LineChart fx:id="balanceLineChart" animated="false" createSymbols="true" legendVisible="false" VBox.vgrow="ALWAYS">
-                                    <xAxis>
-                                        <CategoryAxis label="Date" />
-                                    </xAxis>
-                                    <yAxis>
-                                        <NumberAxis label="Solde (€)" />
-                                    </yAxis>
-                                </LineChart>
-                            </children>
-                        </VBox>
-
-                        <VBox prefWidth="320.0" style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 10px;">
-                            <children>
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: #212529;" text="Dépenses par catégorie" />
-                                <PieChart fx:id="categoryPieChart" animated="false" legendVisible="false" VBox.vgrow="ALWAYS" />
-                            </children>
-                        </VBox>
-                    </children>
-                </HBox>
-
-                <!-- Section TableView -->
-                <VBox spacing="10.0" VBox.vgrow="ALWAYS" style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 15px;">
-                    <children>
-                        <HBox alignment="CENTER_LEFT" spacing="10.0">
-                            <children>
-                                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #212529;" text="Opérations du compte sélectionné" />
-                                <Region HBox.hgrow="ALWAYS" />
-                                <Button onAction="#handleEditOperation" styleClass="btn, btn-default, btn-sm" text="✏️ Modifier" />
-                                <Button onAction="#handleDeleteOperation" styleClass="btn, btn-danger, btn-sm" text="🗑️ Supprimer" />
-                            </children>
-                        </HBox>
-
-                        <TableView fx:id="operationsTable" VBox.vgrow="ALWAYS">
-                            <columns>
-                                <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Date" />
-                                <TableColumn fx:id="labelColumn" prefWidth="250.0" text="Libellé" />
-                                <TableColumn fx:id="categoryColumn" prefWidth="160.0" text="Catégorie" />
-                                <TableColumn fx:id="amountColumn" prefWidth="130.0" style="-fx-alignment: CENTER-RIGHT;" text="Montant" />
-                                <TableColumn fx:id="statusColumn" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Statut" />
-                                <TableColumn fx:id="actionColumn" prefWidth="100.0" style="-fx-alignment: CENTER;" text="Action" />
-                            </columns>
-                            <columnResizePolicy>
-                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                            </columnResizePolicy>
-                        </TableView>
-                    </children>
+            <!-- Cartes KPI -->
+            <HBox spacing="15.0">
+                <VBox HBox.hgrow="ALWAYS" styleClass="kpi-card"
+                      style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 15px;">
+                    <Label styleClass="text-muted" style="-fx-font-size: 11px; -fx-font-weight: bold;"
+                           text="SOLDE RÉALISÉ (EFFECTIF)"/>
+                    <Label fx:id="settledBalanceLabel"
+                           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #28a745;"
+                           text="0,00 €"/>
                 </VBox>
-            </children>
+
+                <VBox HBox.hgrow="ALWAYS" styleClass="kpi-card"
+                      style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 15px;">
+                    <Label styleClass="text-muted" style="-fx-font-size: 11px; -fx-font-weight: bold;"
+                           text="NET DES FLUX À VENIR"/>
+                    <Label fx:id="netPlannedLabel"
+                           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #ffc107;"
+                           text="0,00 €"/>
+                </VBox>
+
+                <VBox HBox.hgrow="ALWAYS" styleClass="kpi-card"
+                      style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 15px;">
+                    <Label styleClass="text-muted" style="-fx-font-size: 11px; -fx-font-weight: bold;"
+                           text="SOLDE PROJETÉ ESTIMÉ"/>
+                    <Label fx:id="projectedBalanceLabel"
+                           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #007bff;"
+                           text="0,00 €"/>
+                </VBox>
+            </HBox>
+
+            <!-- Section Graphiques -->
+            <HBox prefHeight="220.0" spacing="15.0">
+                <VBox HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 10px;">
+                    <Label style="-fx-font-weight: bold; -fx-text-fill: #212529;"
+                           text="Trajectoire et prévisions de trésorerie"/>
+                    <LineChart fx:id="balanceLineChart" animated="false" createSymbols="true"
+                               legendVisible="false" VBox.vgrow="ALWAYS">
+                        <xAxis>
+                            <CategoryAxis label="Date"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Solde (€)"/>
+                        </yAxis>
+                    </LineChart>
+                </VBox>
+
+                <VBox prefWidth="320.0"
+                      style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 10px;">
+                    <Label style="-fx-font-weight: bold; -fx-text-fill: #212529;"
+                           text="Dépenses par catégorie"/>
+                    <PieChart fx:id="categoryPieChart" animated="false" legendVisible="false"
+                              VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </HBox>
+
+            <!-- Section TableView -->
+            <VBox spacing="10.0" VBox.vgrow="ALWAYS"
+                  style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 15px;">
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #212529;"
+                           text="Opérations du compte sélectionné"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button onAction="#handleEditOperation" styleClass="btn, btn-default, btn-sm"
+                            text="✏️ Modifier"/>
+                    <Button onAction="#handleDeleteOperation" styleClass="btn, btn-danger, btn-sm"
+                            text="🗑️ Supprimer"/>
+                </HBox>
+
+                <TableView fx:id="operationsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Date"/>
+                        <TableColumn fx:id="labelColumn" prefWidth="250.0" text="Libellé"/>
+                        <TableColumn fx:id="categoryColumn" prefWidth="160.0" text="Catégorie"/>
+                        <TableColumn fx:id="amountColumn" prefWidth="130.0" style="-fx-alignment: CENTER-RIGHT;"
+                                     text="Montant"/>
+                        <TableColumn fx:id="statusColumn" prefWidth="120.0" style="-fx-alignment: CENTER;"
+                                     text="Statut"/>
+                        <TableColumn fx:id="actionColumn" prefWidth="100.0" style="-fx-alignment: CENTER;"
+                                     text="Action"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                </TableView>
+            </VBox>
         </VBox>
     </center>
 </BorderPane>

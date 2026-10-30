@@ -12,6 +12,8 @@ import com.monbudget.model.enums.OperationType;
 import com.monbudget.service.BalanceService;
 import com.monbudget.service.BalanceSummary;
 import com.monbudget.service.OperationService;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -22,7 +24,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+//import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -177,10 +179,20 @@ public class DashboardController {
     }
 
     private void setupTableColumns() {
-        dateColumn.setCellValueFactory(new PropertyValueFactory<>("operationDate"));
-        labelColumn.setCellValueFactory(new PropertyValueFactory<>("label"));
+        // Date (record accessor: operationDate())
+        dateColumn.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().operationDate())
+        );
 
-        categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryId"));
+        // Libellé (record accessor: label())
+        labelColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().label())
+        );
+
+        // Catégorie ID (record accessor: categoryId())
+        categoryColumn.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().categoryId())
+        );
         categoryColumn.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(Long categoryId, boolean empty) {
@@ -193,7 +205,10 @@ public class DashboardController {
             }
         });
 
-        amountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        // Montant (record accessor: amount())
+        amountColumn.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().amount())
+        );
         amountColumn.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(BigDecimal amount, boolean empty) {
@@ -215,7 +230,10 @@ public class DashboardController {
             }
         });
 
-        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        // Statut (record accessor: status())
+        statusColumn.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().status())
+        );
         statusColumn.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(OperationStatus status, boolean empty) {
@@ -231,6 +249,7 @@ public class DashboardController {
             }
         });
 
+        // Colonne d'action (pointage unitaire)
         actionColumn.setCellFactory(col -> new TableCell<>() {
             private final Button pointButton = new Button("Pointer");
 
