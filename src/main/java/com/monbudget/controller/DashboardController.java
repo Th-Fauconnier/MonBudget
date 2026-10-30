@@ -2,13 +2,11 @@ package com.monbudget.controller;
 
 import com.monbudget.dao.BookDao;
 import com.monbudget.dao.CategoryDao;
-import com.monbudget.dao.DatabaseManager;
 import com.monbudget.dao.OperationDao;
 import com.monbudget.model.Book;
 import com.monbudget.model.Category;
 import com.monbudget.model.Operation;
 import com.monbudget.model.enums.OperationStatus;
-import com.monbudget.model.enums.OperationType;
 import com.monbudget.service.BalanceService;
 import com.monbudget.service.BalanceSummary;
 import com.monbudget.service.OperationService;
@@ -24,7 +22,6 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
-//import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -162,8 +159,8 @@ public class DashboardController {
             bookComboBox.setValue(bookToSelect);
             this.currentBook = bookToSelect;
         } else if (!books.isEmpty()) {
-            bookComboBox.setValue(books.get(0));
-            this.currentBook = books.get(0);
+            bookComboBox.setValue(books.getFirst());
+            this.currentBook = books.getFirst();
         }
 
         loadDashboardDataAsync();

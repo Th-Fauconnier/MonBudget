@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="720.0" prefWidth="1100.0" style="-fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.monbudget.controller.DashboardController">
+<BorderPane prefHeight="720.0" prefWidth="1100.0" style="-fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@/css/custom-theme.css" fx:controller="com.monbudget.controller.DashboardController">
 
     <!-- En-tête : Sélecteur de compte, boutons d'action rapide et filtres temporels -->
     <top>
