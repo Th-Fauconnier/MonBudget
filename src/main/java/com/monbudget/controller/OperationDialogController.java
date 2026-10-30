@@ -7,6 +7,7 @@ import com.monbudget.model.Category;
 import com.monbudget.model.Operation;
 import com.monbudget.model.enums.OperationStatus;
 import com.monbudget.model.enums.OperationType;
+import com.monbudget.util.UiUtils;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -36,7 +37,12 @@ public class OperationDialogController {
 
     @FXML
     public void initialize() {
-        typeComboBox.setItems(FXCollections.observableArrayList(OperationType.EXPENSE, OperationType.INCOME));
+        // Initialisation du ComboBox de type de flux
+        UiUtils.setupOperationTypeComboBox(typeComboBox);
+
+        // Initialisation du ComboBox de catégorie parente
+        UiUtils.setupCategoryComboBox(categoryComboBox);
+
         typeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateCategoriesList(newVal));
 
         // Formatage réactif des montants : conversion automatique ',' -> '.'

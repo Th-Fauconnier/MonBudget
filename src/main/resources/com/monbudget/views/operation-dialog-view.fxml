@@ -14,68 +14,67 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefWidth="480.0" spacing="15.0" style="-fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.monbudget.controller.OperationDialogController">
+<VBox prefWidth="480.0" spacing="15.0" style="-fx-background-color: #ffffff;" stylesheets="@/css/custom-theme.css"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.monbudget.controller.OperationDialogController">
     <padding>
-        <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
+        <Insets bottom="20.0" left="25.0" right="25.0" top="20.0"/>
     </padding>
 
-    <children>
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <children>
-                <Label style="-fx-font-size: 18px;" text="📝" />
-                <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #212529;" text="Détails de l'opération" />
-            </children>
-        </HBox>
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label style="-fx-font-size: 18px;" text="📝"/>
+        <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #212529;"
+               text="Détails de l'opération"/>
+    </HBox>
 
-        <Label fx:id="errorLabel" style="-fx-text-fill: #dc3545; -fx-font-size: 12px;" wrapText="true" />
+    <Label fx:id="errorLabel" style="-fx-text-fill: #dc3545; -fx-font-size: 12px;" wrapText="true"/>
 
-        <GridPane hgap="12.0" vgap="12.0">
-            <columnConstraints>
-                <ColumnConstraints minWidth="100.0" prefWidth="120.0" />
-                <ColumnConstraints hgrow="ALWAYS" minWidth="200.0" />
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints minHeight="30.0" />
-                <RowConstraints minHeight="30.0" />
-                <RowConstraints minHeight="30.0" />
-                <RowConstraints minHeight="30.0" />
-                <RowConstraints minHeight="30.0" />
-                <RowConstraints minHeight="30.0" />
-                <RowConstraints minHeight="60.0" />
-            </rowConstraints>
+    <GridPane hgap="12.0" vgap="12.0">
+        <columnConstraints>
+            <ColumnConstraints minWidth="100.0" prefWidth="120.0"/>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="200.0"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="30.0"/>
+            <RowConstraints minHeight="30.0"/>
+            <RowConstraints minHeight="30.0"/>
+            <RowConstraints minHeight="30.0"/>
+            <RowConstraints minHeight="30.0"/>
+            <RowConstraints minHeight="30.0"/>
+            <RowConstraints minHeight="60.0"/>
+        </rowConstraints>
 
-            <children>
-                <Label text="Libellé :" GridPane.rowIndex="0" />
-                <TextField fx:id="labelField" promptText="Ex : Courses, Salaire..." GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <Label text="Libellé :" GridPane.rowIndex="0"/>
+        <TextField fx:id="labelField" promptText="Ex : Courses, Salaire..." GridPane.columnIndex="1"
+                   GridPane.rowIndex="0"/>
 
-                <Label text="Type de flux :" GridPane.rowIndex="1" />
-                <ComboBox fx:id="typeComboBox" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <Label text="Type de flux :" GridPane.rowIndex="1"/>
+        <ComboBox fx:id="typeComboBox" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-                <Label text="Montant (€) :" GridPane.rowIndex="2" />
-                <TextField fx:id="amountField" promptText="0.00" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <Label text="Montant (€) :" GridPane.rowIndex="2"/>
+        <TextField fx:id="amountField" promptText="0.00" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
-                <Label text="Catégorie :" GridPane.rowIndex="3" />
-                <ComboBox fx:id="categoryComboBox" maxWidth="Infinity" promptText="Sélectionner une catégorie..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <Label text="Catégorie :" GridPane.rowIndex="3"/>
+        <ComboBox fx:id="categoryComboBox" maxWidth="Infinity" promptText="Sélectionner une catégorie..."
+                  GridPane.columnIndex="1" GridPane.rowIndex="3"/>
 
-                <Label text="Date d'opération :" GridPane.rowIndex="4" />
-                <DatePicker fx:id="operationDatePicker" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+        <Label text="Date d'opération :" GridPane.rowIndex="4"/>
+        <DatePicker fx:id="operationDatePicker" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
-                <Label text="Pointage :" GridPane.rowIndex="5" />
-                <CheckBox fx:id="settledCheckBox" text="Opération déjà débitée / créditée (Réalisé)" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        <Label text="Pointage :" GridPane.rowIndex="5"/>
+        <CheckBox fx:id="settledCheckBox" text="Opération déjà débitée / créditée (Réalisé)"
+                  GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-                <Label text="Notes libres :" GridPane.rowIndex="6" GridPane.valignment="TOP" />
-                <TextArea fx:id="notesArea" prefRowCount="3" promptText="Précisions éventuelles..." wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-            </children>
-        </GridPane>
+        <Label text="Notes libres :" GridPane.rowIndex="6" GridPane.valignment="TOP"/>
+        <TextArea fx:id="notesArea" prefRowCount="3" promptText="Précisions éventuelles..." wrapText="true"
+                  GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+    </GridPane>
 
-        <HBox alignment="CENTER_RIGHT" spacing="10.0">
-            <padding>
-                <Insets top="10.0" />
-            </padding>
-            <children>
-                <Button onAction="#handleCancel" styleClass="btn, btn-default" text="Annuler" />
-                <Button onAction="#handleSave" styleClass="btn, btn-primary" text="💾 Enregistrer" />
-            </children>
-        </HBox>
-    </children>
+    <HBox alignment="CENTER_RIGHT" spacing="10.0">
+        <padding>
+            <Insets top="10.0"/>
+        </padding>
+        <Button onAction="#handleCancel" styleClass="btn, btn-default" text="Annuler"/>
+        <Button onAction="#handleSave" styleClass="btn, btn-primary" text="💾 Enregistrer"/>
+    </HBox>
 </VBox>
