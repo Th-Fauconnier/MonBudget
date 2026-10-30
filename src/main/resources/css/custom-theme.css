@@ -89,10 +89,85 @@
     -fx-text-fill: #856404;
 }
 
+/* Styles pour les éléments du ComboBox de catégories */
+.category-name {
+    -fx-font-weight: bold;
+    -fx-text-fill: #212529;
+}
+
+.category-type {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.category-type-expense {
+    -fx-text-fill: #e74c3c !important; /* Rouge pour les dépenses */
+}
+
+.category-type-income {
+    -fx-text-fill: #27ae60 !important; /* Vert pour les revenus */
+}
+
+/* Empêche le gris de prendre le dessus quand la ligne du ComboBox est survolée ou sélectionnée */
+.list-cell:filled:hover .category-type-expense,
+.list-cell:filled:selected .category-type-expense {
+    -fx-text-fill: #e74c3c !important;
+}
+
+.list-cell:filled:hover .category-type-income,
+.list-cell:filled:selected .category-type-income {
+    -fx-text-fill: #27ae60 !important;
+}
+
 /* Alignements réutilisables pour les colonnes */
 .col-center {
     -fx-alignment: CENTER;
 }
 .col-right {
     -fx-alignment: CENTER_RIGHT;
+}
+
+/* ==========================================================================
+   Styles pour le ComboBox de type de flux et ses options
+   ========================================================================== */
+
+/* Fond du bouton principal du ComboBox selon le type sélectionné */
+.combo-box.type-expense {
+    -fx-background-color: #fdf2f2;
+    -fx-border-color: #f5c6cb;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.combo-box.type-income {
+    -fx-background-color: #f0fdf4;
+    -fx-border-color: #d4edda;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+/* Fond et couleur pour l'option "Dépense" dans le menu déroulant */
+.list-cell.cell-type-expense {
+    -fx-background-color: #fdf2f2;
+    -fx-text-fill: #e74c3c;
+    -fx-font-weight: bold;
+}
+
+.list-cell.cell-type-expense:hover,
+.list-cell.cell-type-expense:selected {
+    -fx-background-color: #f5c6cb !important;
+    -fx-text-fill: #c0392b !important;
+}
+
+/* Fond et couleur pour l'option "Revenu" dans le menu déroulant */
+.list-cell.cell-type-income {
+    -fx-background-color: #f0fdf4;
+    -fx-text-fill: #27ae60;
+    -fx-font-weight: bold;
+}
+
+.list-cell.cell-type-income:hover,
+.list-cell.cell-type-income:selected {
+    -fx-background-color: #d4edda !important;
+    -fx-text-fill: #1e8449 !important;
 }
