@@ -32,6 +32,7 @@ import javafx.util.StringConverter;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
@@ -72,6 +73,7 @@ public class DashboardController {
     private Book currentBook;
 
     private final Map<Long, String> categoryNamesMap = new HashMap<>();
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @FXML
     public void initialize() {
@@ -180,6 +182,21 @@ public class DashboardController {
         dateColumn.setCellValueFactory(cellData ->
                 new SimpleObjectProperty<>(cellData.getValue().operationDate())
         );
+        dateColumn.setCellFactory(col -> new TableCell<>() {
+            {
+                getStyleClass().add("col-center");
+            }
+
+            @Override
+            protected void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (empty || date == null) {
+                    setText(null);
+                } else {
+                    setText(date.format(DATE_FORMATTER));
+                }
+            }
+        });
 
         // Libellé (record accessor: label())
         labelColumn.setCellValueFactory(cellData ->
