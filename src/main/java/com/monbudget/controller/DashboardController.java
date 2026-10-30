@@ -207,21 +207,24 @@ public class DashboardController {
                 new SimpleObjectProperty<>(cellData.getValue().amount())
         );
         amountColumn.setCellFactory(col -> new TableCell<>() {
+            {
+                // On n'ajoute la classe de base qu'une seule fois à l'instanciation de la cellule
+                getStyleClass().add("money-cell");
+            }
+
             @Override
             protected void updateItem(BigDecimal amount, boolean empty) {
                 super.updateItem(amount, empty);
+                // Nettoyage systématique des classes d'état pour éviter l'accumulation au recyclage
+                getStyleClass().removeAll("money-cell-expense", "money-cell-income");
                 if (empty || amount == null) {
                     setText(null);
-                    getStyleClass().removeAll("money-cell-expense", "money-cell-income");
                 } else {
                     setText(CURRENCY_FORMAT.format(amount));
-                    getStyleClass().add("money-cell");
                     if (amount.compareTo(BigDecimal.ZERO) < 0) {
                         getStyleClass().add("money-cell-expense");
-                        getStyleClass().remove("money-cell-income");
                     } else {
                         getStyleClass().add("money-cell-income");
-                        getStyleClass().remove("money-cell-expense");
                     }
                 }
             }
@@ -232,6 +235,9 @@ public class DashboardController {
                 new SimpleObjectProperty<>(cellData.getValue().status())
         );
         statusColumn.setCellFactory(col -> new TableCell<>() {
+            {
+                getStyleClass().add("col-center");
+            }
             @Override
             protected void updateItem(OperationStatus status, boolean empty) {
                 super.updateItem(status, empty);
@@ -248,6 +254,9 @@ public class DashboardController {
 
         // Colonne d'action (pointage unitaire)
         actionColumn.setCellFactory(col -> new TableCell<>() {
+            {
+                getStyleClass().add("col-center");
+            }
             private final Button pointButton = new Button("Pointer");
 
             {

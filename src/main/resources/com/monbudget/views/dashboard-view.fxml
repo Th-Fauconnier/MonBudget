@@ -137,12 +137,9 @@
                         <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Date"/>
                         <TableColumn fx:id="labelColumn" prefWidth="250.0" text="Libellé"/>
                         <TableColumn fx:id="categoryColumn" prefWidth="160.0" text="Catégorie"/>
-                        <TableColumn fx:id="amountColumn" prefWidth="130.0" style="-fx-alignment: CENTER-RIGHT;"
-                                     text="Montant"/>
-                        <TableColumn fx:id="statusColumn" prefWidth="120.0" style="-fx-alignment: CENTER;"
-                                     text="Statut"/>
-                        <TableColumn fx:id="actionColumn" prefWidth="100.0" style="-fx-alignment: CENTER;"
-                                     text="Action"/>
+                        <TableColumn fx:id="amountColumn" prefWidth="130.0" text="Montant"/>
+                        <TableColumn fx:id="statusColumn" prefWidth="120.0" text="Statut"/>
+                        <TableColumn fx:id="actionColumn" prefWidth="100.0" text="Action"/>
                     </columns>
                     <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

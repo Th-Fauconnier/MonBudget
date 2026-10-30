@@ -2,20 +2,73 @@
    custom-theme.css - Thème applicatif MonBudget
    ========================================================================== */
 
-/* Cellules numériques monétaires */
+/* Alignement général des cellules monétaires */
 .money-cell {
-    -fx-font-family: "Consolas", "SF Mono", "Menlo", monospace;
-    -fx-alignment: CENTER-RIGHT;
+    -fx-alignment: CENTER_RIGHT;
 }
 
+/* --- 1. États standards --- */
 .money-cell-expense {
-    -fx-text-fill: #dc3545;
+    -fx-text-fill: #e74c3c;
     -fx-font-weight: bold;
+}
+.money-cell-expense .text {
+    -fx-fill: #e74c3c;
 }
 
 .money-cell-income {
-    -fx-text-fill: #28a745;
+    -fx-text-fill: #2ecc71;
     -fx-font-weight: bold;
+}
+.money-cell-income .text {
+    -fx-fill: #2ecc71;
+}
+
+/* --- 2. Personnalisation globale des lignes du tableau --- */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #dee2e6;
+    -fx-border-radius: 4px;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: transparent transparent #dee2e6 transparent;
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+}
+
+.table-row-cell:filled:hover {
+    -fx-background-color: #f1f3f5;
+}
+
+/* Ligne sélectionnée : arrière-plan doux */
+.table-row-cell:filled:selected,
+.table-row-cell:filled:selected:focused,
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled:selected {
+    -fx-background-color: #e8f0fe;
+    -fx-table-cell-border-color: #d2e3fc;
+}
+
+/* Texte standard de la ligne sélectionnée (pour la date, le libellé, etc.) */
+.table-row-cell:filled:selected .text {
+    -fx-fill: #2c3e50;
+}
+
+/* --- 3. PRIORITÉ ABSOLUE pour les montants sur ligne sélectionnée --- */
+/* Cible le composant ET son nœud interne .text avec !important */
+.table-row-cell:filled:selected .money-cell-expense,
+.table-row-cell:filled:selected .money-cell-expense .text,
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled:selected .money-cell-expense .text {
+    -fx-text-fill: #c0392b !important;
+    -fx-fill: #c0392b !important;
+}
+
+.table-row-cell:filled:selected .money-cell-income,
+.table-row-cell:filled:selected .money-cell-income .text,
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled:selected .money-cell-income .text {
+    -fx-text-fill: #1e8449 !important;
+    -fx-fill: #1e8449 !important;
 }
 
 /* Badges de statut comptable */
@@ -36,25 +89,10 @@
     -fx-text-fill: #856404;
 }
 
-/* Personnalisation des tableaux */
-.table-view {
-    -fx-background-color: transparent;
-    -fx-border-color: #dee2e6;
-    -fx-border-radius: 4px;
+/* Alignements réutilisables pour les colonnes */
+.col-center {
+    -fx-alignment: CENTER;
 }
-
-.table-view .column-header {
-    -fx-background-color: #f8f9fa;
-    -fx-border-color: transparent transparent #dee2e6 transparent;
-    -fx-font-weight: bold;
-    -fx-text-fill: #495057;
-}
-
-.table-row-cell:filled:hover {
-    -fx-background-color: #f1f3f5;
-}
-
-.table-row-cell:filled:selected {
-    -fx-background-color: #e7f1ff;
-    -fx-text-fill: #000000;
+.col-right {
+    -fx-alignment: CENTER_RIGHT;
 }
