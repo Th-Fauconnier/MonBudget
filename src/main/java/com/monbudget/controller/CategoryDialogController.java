@@ -3,6 +3,7 @@ package com.monbudget.controller;
 import com.monbudget.dao.CategoryDao;
 import com.monbudget.model.Category;
 import com.monbudget.model.enums.OperationType;
+import com.monbudget.util.UiUtils;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -24,8 +25,13 @@ public class CategoryDialogController {
 
     @FXML
     public void initialize() {
-        typeComboBox.setItems(FXCollections.observableArrayList(OperationType.EXPENSE, OperationType.INCOME));
-        typeComboBox.setValue(OperationType.EXPENSE);
+
+        // Initialisation du ComboBox de type de flux
+        UiUtils.setupOperationTypeComboBox(typeComboBox);
+
+        // Initialisation du ComboBox de catégorie parente
+        UiUtils.setupCategoryComboBox(parentCategoryComboBox);
+
         colorPicker.setValue(Color.web("#e67e22"));
 
         // Met à jour la liste des parents disponibles quand le type change
