@@ -99,7 +99,7 @@
                       style="-fx-background-color: #ffffff; -fx-background-radius: 8px; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-padding: 10px;">
                     <Label style="-fx-font-weight: bold; -fx-text-fill: #212529;"
                            text="Trajectoire et prévisions de trésorerie"/>
-                    <LineChart fx:id="balanceLineChart" animated="false" createSymbols="true"
+                    <LineChart fx:id="balanceLineChart" animated="false"
                                legendVisible="false" VBox.vgrow="ALWAYS">
                         <xAxis>
                             <CategoryAxis label="Date"/>
