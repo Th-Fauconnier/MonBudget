@@ -18,6 +18,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class OperationDialogController {
 
@@ -37,15 +38,11 @@ public class OperationDialogController {
 
     @FXML
     public void initialize() {
-        // Initialisation du ComboBox de type de flux
         UiUtils.setupOperationTypeComboBox(typeComboBox);
-
-        // Initialisation du ComboBox de catégorie parente
         UiUtils.setupCategoryComboBox(categoryComboBox);
 
         typeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateCategoriesList(newVal));
 
-        // Formatage réactif des montants : conversion automatique ',' -> '.'
         amountField.textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.contains(",")) {
                 amountField.setText(newVal.replace(",", "."));
@@ -60,7 +57,6 @@ public class OperationDialogController {
         this.operationDao = operationDao;
 
         if (operation != null) {
-            // Mode Édition
             labelField.setText(operation.label());
             amountField.setText(operation.amount().abs().toPlainString());
             typeComboBox.setValue(operation.operationType());
@@ -73,7 +69,6 @@ public class OperationDialogController {
                 categoryDao.findById(operation.categoryId()).ifPresent(categoryComboBox::setValue);
             }
         } else {
-            // Mode Création par défaut
             typeComboBox.setValue(OperationType.EXPENSE);
             operationDatePicker.setValue(LocalDate.now());
             settledCheckBox.setSelected(true);
@@ -89,7 +84,7 @@ public class OperationDialogController {
 
     @FXML
     public void handleSave() {
-        if (!validateInputs()) {
+        if (!validateFields(labelField.getText(), amountField.getText(), operationDatePicker.getValue(), errorLabel::setText)) {
             return;
         }
 
@@ -98,7 +93,6 @@ public class OperationDialogController {
             BigDecimal rawAmount = new BigDecimal(amountField.getText().trim()).setScale(2, RoundingMode.HALF_EVEN);
             OperationType type = typeComboBox.getValue();
 
-            // Une dépense est négative, un revenu est positif
             BigDecimal finalAmount = (type == OperationType.EXPENSE) ? rawAmount.abs().negate() : rawAmount.abs();
 
             Category selectedCategory = categoryComboBox.getValue();
@@ -110,43 +104,19 @@ public class OperationDialogController {
             String notes = notesArea.getText() != null ? notesArea.getText().trim() : "";
 
             if (existingOperation == null) {
-                // Création
                 Operation newOperation = new Operation(
-                        0L,
-                        currentBook.id(),
-                        categoryId,
-                        null,
-                        null,
-                        label,
-                        finalAmount,
-                        type,
-                        status,
-                        operationDate,
-                        settledAt,
-                        notes,
-                        null,
-                        LocalDateTime.now(),
-                        LocalDateTime.now()
+                        0L, currentBook.id(), categoryId, null, null,
+                        label, finalAmount, type, status, operationDate,
+                        settledAt, notes, null, LocalDateTime.now(), LocalDateTime.now()
                 );
                 operationDao.save(newOperation);
             } else {
-                // Mise à jour
                 Operation updatedOperation = new Operation(
-                        existingOperation.id(),
-                        currentBook.id(),
-                        categoryId,
-                        existingOperation.paymentMethodId(),
-                        existingOperation.recurrenceRuleId(),
-                        label,
-                        finalAmount,
-                        type,
-                        status,
-                        operationDate,
-                        settledAt,
-                        notes,
-                        existingOperation.transferOperationId(),
-                        existingOperation.createdAt(),
-                        LocalDateTime.now()
+                        existingOperation.id(), currentBook.id(), categoryId,
+                        existingOperation.paymentMethodId(), existingOperation.recurrenceRuleId(),
+                        label, finalAmount, type, status, operationDate,
+                        settledAt, notes, existingOperation.transferOperationId(),
+                        existingOperation.createdAt(), LocalDateTime.now()
                 );
                 operationDao.update(updatedOperation);
             }
@@ -165,36 +135,42 @@ public class OperationDialogController {
         closeStage();
     }
 
-    private boolean validateInputs() {
-        if (labelField.getText() == null || labelField.getText().trim().isEmpty()) {
-            errorLabel.setText("Veuillez saisir un libellé.");
+    /**
+     * Méthode de validation pure, testable sans lancer JavaFX.
+     */
+    protected boolean validateFields(String label, String amountText, LocalDate operationDate, Consumer<String> errorHandler) {
+        if (label == null || label.trim().isEmpty()) {
+            errorHandler.accept("Veuillez saisir un libellé.");
             return false;
         }
 
-        String amountText = amountField.getText();
         if (amountText == null || amountText.trim().isEmpty()) {
-            errorLabel.setText("Veuillez indiquer un montant.");
+            errorHandler.accept("Veuillez indiquer un montant.");
             return false;
         }
 
         try {
             BigDecimal amt = new BigDecimal(amountText.trim());
             if (amt.compareTo(BigDecimal.ZERO) <= 0) {
-                errorLabel.setText("Le montant doit être strictement positif.");
+                errorHandler.accept("Le montant doit être strictement positif.");
                 return false;
             }
         } catch (NumberFormatException e) {
-            errorLabel.setText("Format du montant incorrect (ex : 29.90).");
+            errorHandler.accept("Format du montant incorrect (ex : 29.90).");
             return false;
         }
 
-        if (operationDatePicker.getValue() == null) {
-            errorLabel.setText("Veuillez sélectionner une date.");
+        if (operationDate == null) {
+            errorHandler.accept("Veuillez sélectionner une date.");
             return false;
         }
 
-        errorLabel.setText("");
+        errorHandler.accept("");
         return true;
+    }
+
+    private boolean validateInputs() {
+        return validateFields(labelField.getText(), amountField.getText(), operationDatePicker.getValue(), errorLabel::setText);
     }
 
     private void closeStage() {
