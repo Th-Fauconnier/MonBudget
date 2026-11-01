@@ -26,6 +26,7 @@
         <flyway.version>10.10.0</flyway.version>
         <junit.version>5.10.2</junit.version>
         <assertj.version>3.27.7</assertj.version>
+        <lobback-version>1.6.3</lobback-version>
 
         <!-- Classe principale pour le démarrage via Fat-JAR -->
         <main.class>com.monbudget.Launcher</main.class>
@@ -127,6 +128,19 @@
             <artifactId>junit-jupiter-params</artifactId>
             <version>5.10.2</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${lobback-version}</version>
+        </dependency>
+
+        <!-- Forcer la version moderne de SLF4J (2.x) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.13</version>
         </dependency>
 
     </dependencies>
