@@ -97,8 +97,8 @@ class BookDaoTest {
 
         // Then
         assertEquals(1, activeBooks.size());
-        assertEquals(savedActive.id(), activeBooks.get(0).id());
-        assertEquals("Livret A", activeBooks.get(0).name());
+        assertEquals(savedActive.id(), activeBooks.getFirst().id());
+        assertEquals("Livret A", activeBooks.getFirst().name());
     }
 
     @Test
