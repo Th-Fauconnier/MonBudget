@@ -11,6 +11,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class CategoryDialogController {
 
@@ -25,16 +26,11 @@ public class CategoryDialogController {
 
     @FXML
     public void initialize() {
-
-        // Initialisation du ComboBox de type de flux
         UiUtils.setupOperationTypeComboBox(typeComboBox);
-
-        // Initialisation du ComboBox de catégorie parente
         UiUtils.setupCategoryComboBox(parentCategoryComboBox);
 
         colorPicker.setValue(Color.web("#e67e22"));
 
-        // Met à jour la liste des parents disponibles quand le type change
         typeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> refreshParentCategories(newVal));
     }
 
@@ -51,7 +47,7 @@ public class CategoryDialogController {
 
     @FXML
     public void handleSave() {
-        if (!validateInputs()) {
+        if (!validateFields(nameField.getText(), typeComboBox.getValue(), errorLabel::setText)) {
             return;
         }
 
@@ -89,17 +85,24 @@ public class CategoryDialogController {
         return createdCategory;
     }
 
-    private boolean validateInputs() {
-        if (nameField.getText() == null || nameField.getText().trim().isEmpty()) {
-            errorLabel.setText("Le libellé de la catégorie est obligatoire.");
+    /**
+     * Méthode de validation pure, testable sans lancer JavaFX.
+     */
+    protected boolean validateFields(String name, OperationType type, Consumer<String> errorHandler) {
+        if (name == null || name.trim().isEmpty()) {
+            errorHandler.accept("Le libellé de la catégorie est obligatoire.");
             return false;
         }
-        if (typeComboBox.getValue() == null) {
-            errorLabel.setText("Veuillez sélectionner le type d'opération.");
+        if (type == null) {
+            errorHandler.accept("Veuillez sélectionner le type d'opération.");
             return false;
         }
-        errorLabel.setText("");
+        errorHandler.accept("");
         return true;
+    }
+
+    private boolean validateInputs() {
+        return validateFields(nameField.getText(), typeComboBox.getValue(), errorLabel::setText);
     }
 
     private String toHex(Color color) {
