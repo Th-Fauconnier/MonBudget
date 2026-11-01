@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,18 +29,19 @@ class UiUtilsTest {
     @DisplayName("Devrait configurer correctement le ComboBox de type d'opération")
     void testSetupOperationTypeComboBox() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        final ComboBox<OperationType>[] comboBoxHolder = new ComboBox[1];
+
+        AtomicReference<ComboBox<OperationType>> comboBoxHolder = new AtomicReference<>();
 
         Platform.runLater(() -> {
             ComboBox<OperationType> comboBox = new ComboBox<>();
             UiUtils.setupOperationTypeComboBox(comboBox);
-            comboBoxHolder[0] = comboBox;
+            comboBoxHolder.set(comboBox);
             latch.countDown();
         });
 
         assertTrue(latch.await(5, TimeUnit.SECONDS), "L'initialisation JavaFX a expiré");
 
-        ComboBox<OperationType> comboBox = comboBoxHolder[0];
+        ComboBox<OperationType> comboBox = comboBoxHolder.get();
         assertNotNull(comboBox);
         assertEquals(2, comboBox.getItems().size(), "Le ComboBox doit contenir exactement EXPENSE et INCOME");
         assertTrue(comboBox.getItems().contains(OperationType.EXPENSE));
