@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
 public class BookDialogController {
 
@@ -29,7 +30,6 @@ public class BookDialogController {
         colorPicker.setValue(Color.web("#3498db"));
         initialBalanceField.setText("0.00");
 
-        // Remplacement dynamique de la virgule par un point
         initialBalanceField.textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.contains(",")) {
                 initialBalanceField.setText(newVal.replace(",", "."));
@@ -43,7 +43,8 @@ public class BookDialogController {
 
     @FXML
     public void handleSave() {
-        if (!validateInputs()) {
+        // Utilisation de la méthode métier en passant les composants graphiques et lesetError
+        if (!validateFields(nameField.getText(), currencyField.getText(), initialBalanceField.getText(), errorLabel::setText)) {
             return;
         }
 
@@ -56,16 +57,8 @@ public class BookDialogController {
             String colorHex = toHex(colorPicker.getValue());
 
             Book newBook = new Book(
-                    0L,
-                    name,
-                    description,
-                    currency,
-                    initialBalance,
-                    colorHex,
-                    "wallet",
-                    false,
-                    LocalDateTime.now(),
-                    LocalDateTime.now()
+                    0L, name, description, currency, initialBalance,
+                    colorHex, "wallet", false, LocalDateTime.now(), LocalDateTime.now()
             );
 
             this.createdBook = bookDao.save(newBook);
@@ -87,26 +80,38 @@ public class BookDialogController {
         return createdBook;
     }
 
-    private boolean validateInputs() {
-        if (nameField.getText() == null || nameField.getText().trim().isEmpty()) {
-            errorLabel.setText("Le nom du livre est obligatoire.");
+    /**
+     * Méthode de validation pure, testable sans JavaFX.
+     */
+    protected boolean validateFields(String name, String currency, String balance, Consumer<String> errorHandler) {
+        if (name == null || name.trim().isEmpty()) {
+            errorHandler.accept("Le nom du livre est obligatoire.");
             return false;
         }
 
-        if (currencyField.getText() == null || currencyField.getText().trim().length() != 3) {
-            errorLabel.setText("La devise doit comporter 3 lettres (ex : EUR, USD).");
+        if (currency == null || currency.trim().length() != 3) {
+            errorHandler.accept("La devise doit comporter 3 lettres (ex : EUR, USD).");
+            return false;
+        }
+
+        if (balance == null) {
+            errorHandler.accept("Le solde de départ est invalide.");
             return false;
         }
 
         try {
-            new BigDecimal(initialBalanceField.getText().trim());
+            new BigDecimal(balance.trim());
         } catch (Exception e) {
-            errorLabel.setText("Le solde de départ est invalide.");
+            errorHandler.accept("Le solde de départ est invalide.");
             return false;
         }
 
-        errorLabel.setText("");
+        errorHandler.accept("");
         return true;
+    }
+
+    private boolean validateInputs() {
+        return validateFields(nameField.getText(), currencyField.getText(), initialBalanceField.getText(), errorLabel::setText);
     }
 
     private String toHex(Color color) {
