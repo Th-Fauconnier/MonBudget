@@ -24,16 +24,18 @@ Compile les sources (`src/main/java`) et copie les ressources FXML, CSS et des s
 mvn clean compile
 ```
 
-### 2.2 Exécution des tests unitaires
+### 2.2 Exécution des tests
 
-Lance la suite de tests JUnit 5 et les assertions AssertJ 3.27.7 :
+Lance la suite de tests globale (tests unitaires des modèles, services, contrôleurs FXML et utilitaires + tests d'intégration DAO sur SQLite en mémoire) :
+
 ```bash
+
 mvn test
 ```
 
 Pour exécuter une classe de test spécifique :
 ```bash
-mvn test -Dtest=BalanceServiceTest
+mvn test -Dtest=BookDaoTest
 ```
 
 ### 2.3 Lancement direct en mode développement
@@ -67,10 +69,10 @@ La classe `Launcher` initialise l'environnement standard, puis déclenche le cyc
 
 ## 4. Génération du Fat-JAR Autonome (Maven Shade)
 
-Le Fat-JAR regroupe dans un fichier binaire unique l'ensemble du code compilé, les ressources applicatives (scripts SQL Flyway, FXML, thèmes CSS) ainsi que toutes les dépendances : JavaFX Controls/FXML, SQLite JDBC, Flyway Core & SQLite, BootstrapFX, Ikonli Feather et AssertJ.
+Le Fat-JAR regroupe dans un fichier binaire unique l'ensemble du code compilé, les ressources applicatives (scripts SQL Flyway, FXML, thèmes CSS, configuration de journalisation logback.xml) ainsi que toutes les dépendances : JavaFX Controls/FXML, SQLite JDBC, Flyway Core & SQLite, BootstrapFX, Ikonli Feather, SLF4J/Logback et AssertJ.
 ### 4.1 Production du binaire
 
-Exécutez la phase de packaging Maven :
+(Note : La phase package déclenche par défaut l'ensemble des tests unitaires et d'intégration. Utilisez -DskipTests uniquement en cas de besoin de build d'urgence).
 ```bash
 mvn clean package
 ```
