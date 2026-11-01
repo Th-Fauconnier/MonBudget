@@ -72,7 +72,8 @@ public class BalanceService {
      * Construit les points de la série pour un LineChart illustrant l'évolution cumulée du solde.
      */
     public XYChart.Series<String, Number> buildBalanceHistorySeries(Book book, LocalDate startDate, LocalDate endDate) {
-        List<Operation> operations = operationDao.findByBookAndDateRange(book.id(), startDate, endDate);
+        // Encapsulation dans un ArrayList pour garantir qu'elle est modifiable (évite les UnsupportedOperationException)
+        List<Operation> operations = new ArrayList<>(operationDao.findByBookAndDateRange(book.id(), startDate, endDate));
         operations.sort(Comparator.comparing(Operation::operationDate));
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
