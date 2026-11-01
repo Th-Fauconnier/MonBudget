@@ -198,7 +198,19 @@ Pour garantir une expérience utilisateur fluide sans blocage de l'interface lor
   [ Mise à jour des Labels & Séries des Charts ]
 ```
 
-## 8. Structure Modulaire du Code Source
+## 8. Stratégie de Test et Logging
+   ### 8.1 Organisation des tests
+
+   - Tests unitaires (Modèles, Services, Contrôleurs FXML, Utilitaires) : Valident la logique métier et la conformité des composants. Les contrôleurs sont testés unitairement en isolant leurs dépendances via Mockito, et les classes utilitaires (`UiUtils`) intègrent l'initialisation sécurisée du toolkit JavaFX si nécessaire.
+
+   - Tests d'intégration DAO : Valident le comportement réel des requêtes SQL et du mapping de persistance en s'exécutant sur des bases de données SQLite éphémères en mémoire vive (`jdbc:sqlite::memory:`).
+
+### 8.2 Gestion des Journaux (SLF4J / Logback)
+- `logback.xml` : Configure les niveaux de journalisation et la sortie des logs pour l'exécution normale (production et développement).
+
+- `logback-test.xml` (situé dans `src/test/resources/`) : Isole et épure les logs générés lors de l'exécution des tests automatisés, garantissant des retours de build propres et sans bruit inutile dans la console.
+
+## 9. Structure Modulaire du Code Source
 ```
 src/main/java/com/monbudget/
 ├── Launcher.java             # Lanceur sans héritage Application (contournement JavaFX Shade)
@@ -210,20 +222,29 @@ src/main/java/com/monbudget/
 │   ├── BookDao.java
 │   ├── DatabaseManager.java  # Connexion SQLite WAL + initialisation Flyway
 │   └── OperationDao.java
-├── model/                    # Objets du domaine (Records)
-│   ├── Book.java
-│   ├── Category.java
-│   ├── Operation.java
-│   ├── enums/                # OperationType, OperationStatus, Frequency
+├── model/                   # Modèle de données (Records & Enums)
+│   │       │   ├── Book.java            # Entité Livre / Compte
+│   │       │   ├── Category.java        # Entité Catégorie (avec support parent/enfant)
+│   │       │   ├── Operation.java       # Entité Opération (réalisée ou prévisionnelle)
+│   │       │   ├── PaymentMethod.java   # Mode de paiement (CB, Virement, Prélèvement...)
+│   │       │   ├── RecurrenceRule.java  # Règle de répétition des flux récurrents
+│   │       │   ├── SimulationEntry.java # Ligne de simulation budgétaire
+│   │       │   ├── SimulationScenario.java # Scénario de test prospectif
+│   │       │   ├── Tag.java             # Étiquette transversale d'opération
+│   │       │   └── enums/
+│   │       │       ├── Frequency.java       # (DAILY, WEEKLY, MONTHLY, YEARLY)
+│   │       │       ├── OperationStatus.java # (PLANNED, CLEARED, CANCELLED)
+│   │       │       └── OperationType.java   # (EXPENSE, INCOME, TRANSFER)
 ├── service/                  # Services métier (Calculs de soldes, KPIs)
 │   ├── BalanceService.java
 │   └── BalanceSummary.java
 └── util/
     └── AppDataLocator.java   # Localisation multiplateforme du fichier .db
-    └── util/MoneyHelper.java # Utilitaire de conversion bidirectionnelle entre centimes (long) et montants décimaux (BigDecimal).
+    └── MoneyHelper.java      # Utilitaire de conversion bidirectionnelle entre centimes (long) et montants décimaux (BigDecimal).
+    └── UiUtils.java          # Rendu visuel et cell-factories pour ComboBox (Types, Catégories)
 ```
 
-## 9. Packaging & Déploiement
+## 10. Packaging & Déploiement
 Le packaging est assuré par le plugin Maven Shade Plugin, configuré pour :
 
  1. Fusionner les dépendances (JavaFX controls, SQLite JDBC, BootstrapFX, Ikonli) dans un unique Fat-JAR exécutable. 
