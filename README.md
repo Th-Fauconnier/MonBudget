@@ -9,6 +9,7 @@
 ![BootstrapFX](https://img.shields.io/badge/UI-BootstrapFX%200.4.0-purple.svg)
 ![AssertJ](https://img.shields.io/badge/AssertJ-3.27.7-red.svg)
 ![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
+![Java CI with Maven](https://github.com/Th-Fauconnier/monbudget-java/actions/workflows/maven.yml/badge.svg)
 
 ---
 
@@ -40,7 +41,11 @@
   - Gestion automatisée et versionnée des schémas via **Flyway 10** (`flyway-core`)
   - Répertoire de stockage local conforme aux standards OS via `AppDataLocator` (`%APPDATA%`, `Library/Application Support`, `.local/share`)
 - **Gestion monétaire :** calculs arithmétiques stricts en `BigDecimal` (montants persistés sous forme d'entiers en centimes pour éviter tout artefact d'arrondi)
-- **Tests unitaires :** JUnit 5.10.2 & AssertJ 3.27.7
+- **Tests :**
+  - **Tests unitaires (Modèles, Services & Contrôleurs) :** JUnit 5.10.2, Mockito & AssertJ 3.27.7 (isolation de la logique métier, validation du comportement des contrôleurs FXML par mock des services et gestion des composants graphiques).
+  - **Tests utilitaires & UI (`UiUtils`) :** Validation de la configuration dynamique des composants graphiques (factories de cellules, convertisseurs et styles dynamiques pour les sélecteurs de type et de catégories, avec initialisation sécurisée du toolkit via `Platform.startup`)
+  - **Tests d'intégration DAO :** Exécution sur base SQLite en mémoire (`jdbc:sqlite::memory:`)
+  - **CI/CD :** GitHub Actions automatisé (avec exécution via `xvfb-run` pour garantir le support JavaFX en mode *headless*)
 - **Build & packaging :** Apache Maven & Maven Shade Plugin (assemblage en Fat-JAR autonome)
 
 ---
@@ -67,15 +72,21 @@ cd monbudget-java
 2. Lancer l'application en mode développement
 
 Grâce au plugin JavaFX configuré dans Maven, vous pouvez compiler et lancer directement le projet sans configuration externe :
-```
+```bash
 mvn javafx:run
 ```
 
-## 🧪 Exécution des tests unitaires
+## 🧪 Tests et Intégration Continue
 
-Le projet inclut une suite de tests unitaires pour valider les calculs arithmétiques de soldes et les opérations financières :
-```
-mvn test
+Le projet implémente une stratégie de test rigoureuse couvrant l'ensemble des couches de l'application :
+- **Les tests unitaires** (Modèles, Services) et **utilitaires** (`MoneyHelper`, initialisation du toolkit UI dans `UiUtilsTest`) utilisant JUnit, AssertJ et Mockito.
+- **Les tests d'intégration** (DAOs) s'exécutant sur une base SQLite éphémère en mémoire vive.
+
+### Lancer les tests en local
+Pour exécuter l'ensemble de la suite de tests :
+
+```bash
+mvn clean test
 ```
 
 ## 📦 Compilation et packaging (Fat-JAR)
@@ -118,11 +129,19 @@ monbudget-java/
     │   │       │   ├── BookDao.java
     │   │       │   ├── CategoryDao.java
     │   │       │   └── OperationDao.java
-    │   │       ├── model/                   # Modèle de données (Records, Enums)
-    │   │       │   ├── Book.java
-    │   │       │   ├── Category.java
-    │   │       │   ├── Operation.java
+    │   │       ├── model/                   # Modèle de données (Records & Enums)
+    │   │       │   ├── Book.java            # Entité Livre / Compte
+    │   │       │   ├── Category.java        # Entité Catégorie (avec support parent/enfant)
+    │   │       │   ├── Operation.java       # Entité Opération (réalisée ou prévisionnelle)
+    │   │       │   ├── PaymentMethod.java   # Mode de paiement (CB, Virement, Prélèvement...)
+    │   │       │   ├── RecurrenceRule.java  # Règle de répétition des flux récurrents
+    │   │       │   ├── SimulationEntry.java # Ligne de simulation budgétaire
+    │   │       │   ├── SimulationScenario.java # Scénario de test prospectif
+    │   │       │   ├── Tag.java             # Étiquette transversale d'opération
     │   │       │   └── enums/
+    │   │       │       ├── Frequency.java       # (DAILY, WEEKLY, MONTHLY, YEARLY)
+    │   │       │       ├── OperationStatus.java # (PLANNED, CLEARED, CANCELLED)
+    │   │       │       └── OperationType.java   # (EXPENSE, INCOME, TRANSFER)
     │   │       ├── service/                 # Moteur métier (Soldes, Projections, KPIs)
     │   │       │   ├── BalanceService.java
     │   │       │   ├── BalanceSummary.java
@@ -131,6 +150,7 @@ monbudget-java/
     │   │       └── util/
     │   │           ├── AppDataLocator.java  # Résolution du dossier de données local
     │   │           └── MoneyHelper.java     # Conversions centimes <-> BigDecimal
+    │   │           └── UiUtils.java         # Rendu visuel et cell-factories pour ComboBox (Types, Catégories)
     │   └── resources/
     │       ├── com/monbudget/views/         # Écrans FXML
     │       │   ├── dashboard-view.fxml
@@ -139,13 +159,19 @@ monbudget-java/
     │       │   └── category-dialog-view.fxml
     │       ├── css/                         # Feuilles de style (custom-theme.css)
     │       └── db/
-    │           └── migration/
-    │               └── V1__initial_schema.sql  # Script DDL initial géré par Flyway
+    │       │   └── migration/
+    │       │       └── V1__initial_schema.sql  # Script DDL initial géré par Flyway
+    │       ├── logback.xml                  # Configuration des logs pour l'exécution principale
     └── test/
         └── java/
             └── com/monbudget/
-                ├── dao/                     # Tests d'intégration DAO
-                └── service/                 # Tests unitaires des calculs financiers
+                ├── controller/              # Tests unitaires des contrôleurs FXML (Mockito)
+                ├── dao/                     # Tests d'intégration DAO (SQLite in-memory)
+                ├── model/                   # Tests unitaires des records et fabriques
+                ├── service/                 # Tests unitaires des services métier (Mockito)
+                └── util/                    # Tests unitaires et d'initialisation UI (ex: UiUtilsTest)
+        └── resources/
+           └── logback-test.xml              # Configuration des logs dédiée aux tests automatisés
 ```
 
 ## ⌨️ Fonctionnalités clés de l'interface
