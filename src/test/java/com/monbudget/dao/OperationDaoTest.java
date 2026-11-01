@@ -99,7 +99,7 @@ class OperationDaoTest {
 
         Operation op1 = new Operation(null, bookId, null, null, null, "Op 1", new BigDecimal("10.00"), OperationType.EXPENSE, OperationStatus.PLANNED, LocalDate.of(2026, 10, 10), null, null, null, null, null);
         Operation op2 = new Operation(null, bookId, null, null, null, "Op 2", new BigDecimal("20.00"), OperationType.INCOME, OperationStatus.SETTLED, LocalDate.of(2026, 10, 15), LocalDate.of(2026, 10, 15), null, null, null, null);
-        Operation op3 = new Operation(null, bookId, null, null, null, "Op Hors Date", new BigDecimal("30.00"), OperationType.EXPENSE, OperationStatus.PLANNED, LocalDate.of(2026, 11, 01), null, null, null, null, null);
+        Operation op3 = new Operation(null, bookId, null, null, null, "Op Hors Date", new BigDecimal("30.00"), OperationType.EXPENSE, OperationStatus.PLANNED, LocalDate.of(2026, 11, 1), null, null, null, null, null);
         Operation op4 = new Operation(null, otherBookId, null, null, null, "Autre Livre", new BigDecimal("40.00"), OperationType.EXPENSE, OperationStatus.PLANNED, LocalDate.of(2026, 10, 12), null, null, null, null, null);
 
         operationDao.save(op1);
