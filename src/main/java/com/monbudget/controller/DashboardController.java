@@ -252,7 +252,7 @@ public class DashboardController {
     public void loadDashboardDataAsync() {
         if (!validateFilters(currentBook, startDatePicker.getValue(), endDatePicker.getValue(), msg -> {
             if (!msg.isEmpty()) {
-                // Gestion de l'erreur de filtre si nécessaire
+                showError("Paramètres de filtre invalides", new IllegalArgumentException(msg));
             }
         })) {
             return;
