@@ -35,27 +35,24 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class DashboardController {
 
     private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.FRANCE);
 
-    // En-tête : Sélecteur de livre & filtres
     @FXML private ComboBox<Book> bookComboBox;
     @FXML private DatePicker startDatePicker;
     @FXML private DatePicker endDatePicker;
     @FXML private ProgressIndicator loadingIndicator;
 
-    // Cartes KPI
     @FXML private Label settledBalanceLabel;
     @FXML private Label netPlannedLabel;
     @FXML private Label projectedBalanceLabel;
 
-    // Graphiques
     @FXML private LineChart<String, Number> balanceLineChart;
     @FXML private PieChart categoryPieChart;
 
-    // TableView des opérations
     @FXML private TableView<Operation> operationsTable;
     @FXML private TableColumn<Operation, LocalDate> dateColumn;
     @FXML private TableColumn<Operation, String> labelColumn;
@@ -64,7 +61,6 @@ public class DashboardController {
     @FXML private TableColumn<Operation, OperationStatus> statusColumn;
     @FXML private TableColumn<Operation, Void> actionColumn;
 
-    // Dépendances injectées
     private BalanceService balanceService;
     private OperationService operationService;
     private OperationDao operationDao;
@@ -82,9 +78,6 @@ public class DashboardController {
         setupDefaultDates();
     }
 
-    /**
-     * Initialisation et injection de dépendances.
-     */
     public void initData(
             BalanceService balanceService,
             OperationService operationService,
@@ -105,7 +98,6 @@ public class DashboardController {
     }
 
     private void setupBookComboBox() {
-        // Affichage textuel dans la zone de sélection fermée
         bookComboBox.setConverter(new StringConverter<>() {
             @Override
             public String toString(Book book) {
@@ -118,7 +110,6 @@ public class DashboardController {
             }
         });
 
-        // Rendu visuel dans le menu déroulant : pastille de couleur + nom
         bookComboBox.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(Book book, boolean empty) {
@@ -143,7 +134,6 @@ public class DashboardController {
             }
         });
 
-        // Écouteur de changement de livre
         bookComboBox.valueProperty().addListener((obs, oldBook, newBook) -> {
             if (newBook != null && !newBook.equals(currentBook)) {
                 this.currentBook = newBook;
@@ -178,83 +168,46 @@ public class DashboardController {
     }
 
     private void setupTableColumns() {
-        // Date (record accessor: operationDate())
-        dateColumn.setCellValueFactory(cellData ->
-                new SimpleObjectProperty<>(cellData.getValue().operationDate())
-        );
+        dateColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().operationDate()));
         dateColumn.setCellFactory(col -> new TableCell<>() {
-            {
-                getStyleClass().add("col-center");
-            }
-
+            { getStyleClass().add("col-center"); }
             @Override
             protected void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
-                if (empty || date == null) {
-                    setText(null);
-                } else {
-                    setText(date.format(DATE_FORMATTER));
-                }
+                setText(empty || date == null ? null : date.format(DATE_FORMATTER));
             }
         });
 
-        // Libellé (record accessor: label())
-        labelColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().label())
-        );
+        labelColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().label()));
 
-        // Catégorie ID (record accessor: categoryId())
-        categoryColumn.setCellValueFactory(cellData ->
-                new SimpleObjectProperty<>(cellData.getValue().categoryId())
-        );
+        categoryColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().categoryId()));
         categoryColumn.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(Long categoryId, boolean empty) {
                 super.updateItem(categoryId, empty);
-                if (empty || categoryId == null) {
-                    setText("Sans catégorie");
-                } else {
-                    setText(categoryNamesMap.getOrDefault(categoryId, "Inconnue"));
-                }
+                setText(empty || categoryId == null ? "Sans catégorie" : categoryNamesMap.getOrDefault(categoryId, "Inconnue"));
             }
         });
 
-        // Montant (record accessor: amount())
-        amountColumn.setCellValueFactory(cellData ->
-                new SimpleObjectProperty<>(cellData.getValue().amount())
-        );
+        amountColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().amount()));
         amountColumn.setCellFactory(col -> new TableCell<>() {
-            {
-                // On n'ajoute la classe de base qu'une seule fois à l'instanciation de la cellule
-                getStyleClass().add("money-cell");
-            }
-
+            { getStyleClass().add("money-cell"); }
             @Override
             protected void updateItem(BigDecimal amount, boolean empty) {
                 super.updateItem(amount, empty);
-                // Nettoyage systématique des classes d'état pour éviter l'accumulation au recyclage
                 getStyleClass().removeAll("money-cell-expense", "money-cell-income");
                 if (empty || amount == null) {
                     setText(null);
                 } else {
                     setText(CURRENCY_FORMAT.format(amount));
-                    if (amount.compareTo(BigDecimal.ZERO) < 0) {
-                        getStyleClass().add("money-cell-expense");
-                    } else {
-                        getStyleClass().add("money-cell-income");
-                    }
+                    getStyleClass().add(amount.compareTo(BigDecimal.ZERO) < 0 ? "money-cell-expense" : "money-cell-income");
                 }
             }
         });
 
-        // Statut (record accessor: status())
-        statusColumn.setCellValueFactory(cellData ->
-                new SimpleObjectProperty<>(cellData.getValue().status())
-        );
+        statusColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().status()));
         statusColumn.setCellFactory(col -> new TableCell<>() {
-            {
-                getStyleClass().add("col-center");
-            }
+            { getStyleClass().add("col-center"); }
             @Override
             protected void updateItem(OperationStatus status, boolean empty) {
                 super.updateItem(status, empty);
@@ -262,20 +215,15 @@ public class DashboardController {
                     setGraphic(null);
                 } else {
                     Label badge = new Label(status == OperationStatus.SETTLED ? "RÉALISÉ" : "EN ATTENTE");
-                    badge.getStyleClass().add("badge-status");
-                    badge.getStyleClass().add(status == OperationStatus.SETTLED ? "badge-settled" : "badge-planned");
+                    badge.getStyleClass().addAll("badge-status", status == OperationStatus.SETTLED ? "badge-settled" : "badge-planned");
                     setGraphic(badge);
                 }
             }
         });
 
-        // Colonne d'action (pointage unitaire)
         actionColumn.setCellFactory(col -> new TableCell<>() {
-            {
-                getStyleClass().add("col-center");
-            }
+            { getStyleClass().add("col-center"); }
             private final Button pointButton = new Button("Pointer");
-
             {
                 pointButton.getStyleClass().addAll("btn", "btn-default", "btn-sm");
                 pointButton.setOnAction(e -> {
@@ -286,7 +234,6 @@ public class DashboardController {
                     }
                 });
             }
-
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
@@ -303,7 +250,11 @@ public class DashboardController {
 
     @FXML
     public void loadDashboardDataAsync() {
-        if (currentBook == null || startDatePicker.getValue() == null || endDatePicker.getValue() == null) {
+        if (!validateFilters(currentBook, startDatePicker.getValue(), endDatePicker.getValue(), msg -> {
+            if (!msg.isEmpty()) {
+                // Gestion de l'erreur de filtre si nécessaire
+            }
+        })) {
             return;
         }
 
@@ -352,6 +303,26 @@ public class DashboardController {
         Thread worker = new Thread(task);
         worker.setDaemon(true);
         worker.start();
+    }
+
+    /**
+     * Méthode de validation pure des filtres du dashboard, testable sans JavaFX.
+     */
+    protected boolean validateFilters(Book book, LocalDate startDate, LocalDate endDate, Consumer<String> errorHandler) {
+        if (book == null) {
+            errorHandler.accept("Veuillez sélectionner un livre de comptes.");
+            return false;
+        }
+        if (startDate == null || endDate == null) {
+            errorHandler.accept("Les dates de début et de fin sont obligatoires.");
+            return false;
+        }
+        if (startDate.isAfter(endDate)) {
+            errorHandler.accept("La date de début ne peut pas être postérieure à la date de fin.");
+            return false;
+        }
+        errorHandler.accept("");
+        return true;
     }
 
     @FXML
