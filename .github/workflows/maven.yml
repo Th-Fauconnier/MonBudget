@@ -20,5 +20,5 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Run Unit Tests with Maven
-        run: mvn clean test
+      - name: Run Unit Tests with Maven (Headless Xvfb)
+        run: xvfb-run mvn clean test
