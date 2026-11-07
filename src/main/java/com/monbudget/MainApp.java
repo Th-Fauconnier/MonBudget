@@ -15,6 +15,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.kordamp.bootstrapfx.BootstrapFX;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -35,6 +37,8 @@ public class MainApp extends Application {
     private RecurrenceRuleDao recurrenceRuleDao;
     private BalanceService balanceService;
     private OperationService operationService;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger( MainApp.class );
 
     /**
      * Étape 1 : Initialisation en arrière-plan (Launcher Thread).
@@ -61,6 +65,7 @@ public class MainApp extends Application {
 
         } catch (Throwable t) {
             // On capture l'exception pour la traiter graphiquement dans start()
+            LOGGER.error( t.getMessage(), t);
             this.startupError = t;
         }
     }
@@ -112,6 +117,7 @@ public class MainApp extends Application {
             primaryStage.show();
 
         } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
             showStartupErrorDialog(e);
         }
     }
@@ -127,7 +133,7 @@ public class MainApp extends Application {
                 System.out.println("Connexion SQLite fermée proprement.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
