@@ -29,6 +29,8 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -72,6 +74,8 @@ public class DashboardController {
 
     private final Map<Long, String> categoryNamesMap = new HashMap<>();
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    private static final Logger logger = LoggerFactory.getLogger( DashboardController.class );
 
     @FXML
     public void initialize() {
@@ -350,6 +354,7 @@ public class DashboardController {
                 refreshBookList(created);
             }
         } catch (Exception ex) {
+            logger.error("Impossible d'ouvrir le dialogue de création de compte : {}", ex.getMessage(), ex);
             showError("Impossible d'ouvrir le dialogue de création de compte", ex);
         }
     }
@@ -375,6 +380,7 @@ public class DashboardController {
                 loadDashboardDataAsync();
             }
         } catch (Exception ex) {
+            logger.error("Impossible d'ouvrir le dialogue de création de catégorie : {}", ex.getMessage(), ex);
             showError("Impossible d'ouvrir le dialogue de création de catégorie", ex);
         }
     }
@@ -426,6 +432,7 @@ public class DashboardController {
             loadDashboardDataAsync();
 
         } catch (Exception ex) {
+            logger.error("Impossible d'ouvrir le formulaire d'opération : {}", ex.getMessage(), ex);
             showError("Impossible d'ouvrir le formulaire d'opération", ex);
         }
     }
