@@ -3,6 +3,7 @@ package com.monbudget.controller;
 import com.monbudget.dao.BookDao;
 import com.monbudget.dao.CategoryDao;
 import com.monbudget.dao.OperationDao;
+import com.monbudget.dao.RecurrenceRuleDao;
 import com.monbudget.model.Book;
 import com.monbudget.model.Category;
 import com.monbudget.model.Operation;
@@ -66,6 +67,7 @@ public class DashboardController {
     private OperationDao operationDao;
     private CategoryDao categoryDao;
     private BookDao bookDao;
+    private RecurrenceRuleDao recurrenceRuleDao;
     private Book currentBook;
 
     private final Map<Long, String> categoryNamesMap = new HashMap<>();
@@ -410,7 +412,7 @@ public class DashboardController {
             Parent root = loader.load();
 
             OperationDialogController controller = loader.getController();
-            controller.initData(currentBook, operationToEdit, categoryDao, operationDao);
+            controller.initData(currentBook, operationToEdit, categoryDao, operationDao, recurrenceRuleDao);
 
             Stage dialogStage = new Stage();
             dialogStage.setTitle(operationToEdit == null ? "Nouvelle opération" : "Modifier une opération");
