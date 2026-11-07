@@ -1,14 +1,16 @@
 package com.monbudget.dao;
 
 import com.monbudget.model.RecurrenceRule;
+import com.monbudget.util.DateHelper;
 
 import java.sql.*;
+import java.util.Objects;
 
 public class RecurrenceRuleDao {
     private final Connection connection;
 
     public RecurrenceRuleDao(Connection connection) {
-        this.connection = connection;
+        this.connection = Objects.requireNonNull(connection, "La connexion ne doit pas être null.");
     }
 
     public RecurrenceRule save(RecurrenceRule rule) {
@@ -20,8 +22,10 @@ public class RecurrenceRuleDao {
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, rule.frequency().name());
             stmt.setInt(2, rule.interval());
-            stmt.setString(3, rule.startDate().toString());
-            stmt.setString(4, rule.endDate() != null ? rule.endDate().toString() : null);
+
+            stmt.setString(3, DateHelper.toSqlDate(rule.startDate()));
+            stmt.setString(4, DateHelper.toSqlDate(rule.endDate()));
+
             if (rule.dayOfMonth() != null) {
                 stmt.setInt(5, rule.dayOfMonth());
             } else {
