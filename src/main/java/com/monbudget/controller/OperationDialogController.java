@@ -63,13 +63,6 @@ public class OperationDialogController {
         // Gestion de l'affichage dynamique du bloc de récurrence
         recurrenceBox.managedProperty().bind(recurringCheckBox.selectedProperty());
         recurrenceBox.visibleProperty().bind(recurringCheckBox.selectedProperty());
-        recurrenceBox.setVisible(false);
-        recurrenceBox.setManaged(false);
-
-        recurringCheckBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-            recurrenceBox.setVisible(newVal);
-            recurrenceBox.setManaged(newVal);
-        });
 
         typeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateCategoriesList(newVal));
 
