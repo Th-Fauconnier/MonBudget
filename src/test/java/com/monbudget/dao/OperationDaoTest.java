@@ -25,30 +25,45 @@ class OperationDaoTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        // Connexion SQLite en mémoire
         connection = DriverManager.getConnection("jdbc:sqlite::memory:");
 
-        // Création du schéma de la table operation (simulant vos migrations Flyway)
         try (Statement stmt = connection.createStatement()) {
+            // Activation des clés étrangères pour SQLite en mémoire
+            stmt.execute("PRAGMA foreign_keys = ON;");
+
+            // Table des règles de récurrence
             stmt.execute("""
-                CREATE TABLE operation (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    book_id INTEGER NOT NULL,
-                    category_id INTEGER,
-                    payment_method_id INTEGER,
-                    recurrence_rule_id INTEGER,
-                    label TEXT NOT NULL,
-                    amount INTEGER NOT NULL,
-                    operation_type TEXT NOT NULL,
-                    status TEXT NOT NULL,
-                    operation_date TEXT NOT NULL,
-                    settled_at TEXT,
-                    notes TEXT,
-                    transfer_operation_id INTEGER,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """);
+            CREATE TABLE recurrence_rule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                frequency TEXT NOT NULL,
+                interval INTEGER NOT NULL DEFAULT 1,
+                start_date TEXT NOT NULL,
+                end_date TEXT,
+                day_of_month INTEGER
+            )
+        """);
+
+            // Table des opérations
+            stmt.execute("""
+            CREATE TABLE operation (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                book_id INTEGER NOT NULL,
+                category_id INTEGER,
+                payment_method_id INTEGER,
+                recurrence_rule_id INTEGER,
+                label TEXT NOT NULL,
+                amount INTEGER NOT NULL,
+                operation_type TEXT NOT NULL,
+                status TEXT NOT NULL,
+                operation_date TEXT NOT NULL,
+                settled_at TEXT,
+                notes TEXT,
+                transfer_operation_id INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (recurrence_rule_id) REFERENCES recurrence_rule(id) ON DELETE SET NULL
+            )
+        """);
         }
 
         operationDao = new OperationDao(connection);
@@ -150,5 +165,42 @@ class OperationDaoTest {
         // Then
         Optional<Operation> found = operationDao.findById(id);
         assertTrue(found.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Devrait sauvegarder et retrouver une opération associée à une règle de récurrence")
+    void testSaveAndFindOperationWithRecurrence() throws Exception {
+        // Given : Insertion préalable d'une règle de récurrence (via DAO ou SQL direct)
+        long recurrenceRuleId;
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate("""
+                INSERT INTO recurrence_rule (frequency, interval, start_date)
+                VALUES ('MONTHLY', 1, '2026-01-01')
+            """);
+            try (var keys = stmt.getGeneratedKeys()) {
+                keys.next();
+                recurrenceRuleId = keys.getLong(1);
+            }
+        }
+
+        Operation operation = new Operation(
+                null, 1L, null, null, recurrenceRuleId,
+                "Loyer Mensuel", new BigDecimal("850.00"),
+                OperationType.EXPENSE, OperationStatus.PLANNED,
+                LocalDate.of(2026, 11, 1), null,
+                "Loyer appartement", null, null, null
+        );
+
+        // When
+        Operation saved = operationDao.save(operation);
+
+        // Then
+        assertNotNull(saved.id());
+        Optional<Operation> found = operationDao.findById(saved.id());
+
+        assertTrue(found.isPresent());
+        assertEquals("Loyer Mensuel", found.get().label());
+        assertEquals(recurrenceRuleId, found.get().recurrenceRuleId());
+        assertEquals(new BigDecimal("850.00"), found.get().amount());
     }
 }
