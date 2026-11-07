@@ -53,6 +53,7 @@ public class MainApp extends Application {
             this.bookDao = new BookDao(dbConnection);
             this.categoryDao = new CategoryDao(dbConnection);
             this.operationDao = new OperationDao(dbConnection);
+            this.recurrenceRuleDao = new RecurrenceRuleDao(dbConnection);
 
             // 4. Initialisation des Services métier
             this.balanceService = new BalanceService(operationDao);
