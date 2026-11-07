@@ -86,6 +86,7 @@ public class DashboardController {
             OperationDao operationDao,
             CategoryDao categoryDao,
             BookDao bookDao,
+            RecurrenceRuleDao recurrenceRuleDao,
             Book initialBook
     ) {
         this.balanceService = balanceService;
@@ -93,6 +94,7 @@ public class DashboardController {
         this.operationDao = operationDao;
         this.categoryDao = categoryDao;
         this.bookDao = bookDao;
+        this.recurrenceRuleDao = recurrenceRuleDao;
         this.currentBook = initialBook;
 
         refreshCategoryCache();
