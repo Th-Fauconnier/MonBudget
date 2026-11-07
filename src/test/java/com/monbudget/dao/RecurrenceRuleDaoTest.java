@@ -12,8 +12,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 class RecurrenceRuleDaoTest {
 
@@ -102,5 +104,40 @@ class RecurrenceRuleDaoTest {
         assertThat(savedRule.startDate()).isEqualTo(startDate);
         assertThat(savedRule.endDate()).isNull();
         assertThat(savedRule.dayOfMonth()).isNull();
+    }
+
+    @Test
+    @DisplayName("Devrait sauvegarder une règle de récurrence et la retrouver par son ID")
+    void testSaveAndFindById() {
+        // Given
+        RecurrenceRule rule = new RecurrenceRule(
+                null,
+                Frequency.MONTHLY,
+                1,
+                LocalDate.of(2026, 11, 1),
+                LocalDate.of(2027, 11, 1),
+                15
+        );
+
+        // When
+        RecurrenceRule saved = recurrenceRuleDao.save(rule);
+
+        // Then
+        assertNotNull(saved.id());
+        Optional<RecurrenceRule> found = recurrenceRuleDao.findById(saved.id());
+
+        assertTrue(found.isPresent());
+        assertEquals(Frequency.MONTHLY, found.get().frequency());
+        assertEquals(1, found.get().interval());
+        assertEquals(LocalDate.of(2026, 11, 1), found.get().startDate());
+        assertEquals(LocalDate.of(2027, 11, 1), found.get().endDate());
+        assertEquals(15, found.get().dayOfMonth());
+    }
+
+    @Test
+    @DisplayName("Devrait retourner Optional.empty si l'ID n'existe pas")
+    void testFindByIdNotFound() {
+        Optional<RecurrenceRule> found = recurrenceRuleDao.findById(999L);
+        assertTrue(found.isEmpty());
     }
 }
