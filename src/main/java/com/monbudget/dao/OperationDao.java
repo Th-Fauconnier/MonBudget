@@ -3,6 +3,7 @@ package com.monbudget.dao;
 import com.monbudget.model.Operation;
 import com.monbudget.model.enums.OperationStatus;
 import com.monbudget.model.enums.OperationType;
+import com.monbudget.util.DateHelper;
 import com.monbudget.util.MoneyHelper;
 
 import java.sql.*;
@@ -14,7 +15,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class OperationDao {
-
     private final Connection connection;
 
     public OperationDao(Connection connection) {
@@ -32,31 +32,46 @@ public class OperationDao {
 
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, operation.bookId());
-            setNullableLong(stmt, 2, operation.categoryId());
-            setNullableLong(stmt, 3, operation.paymentMethodId());
-            setNullableLong(stmt, 4, operation.recurrenceRuleId());
+
+            if (operation.categoryId() != null) stmt.setLong(2, operation.categoryId());
+            else stmt.setNull(2, Types.INTEGER);
+
+            if (operation.paymentMethodId() != null) stmt.setLong(3, operation.paymentMethodId());
+            else stmt.setNull(3, Types.INTEGER);
+
+            if (operation.recurrenceRuleId() != null) {
+                stmt.setLong(4, operation.recurrenceRuleId());
+            } else {
+                stmt.setNull(4, Types.INTEGER);
+            }
+
             stmt.setString(5, operation.label());
             stmt.setLong(6, MoneyHelper.toCents(operation.amount()));
             stmt.setString(7, operation.operationType().name());
             stmt.setString(8, operation.status().name());
-            stmt.setString(9, operation.operationDate().toString());
-            stmt.setString(10, operation.settledAt() != null ? operation.settledAt().toString() : null);
+
+            stmt.setString(9, DateHelper.toSqlDate(operation.operationDate()));
+            stmt.setString(10, DateHelper.toSqlDate(operation.settledAt()));
+
             stmt.setString(11, operation.notes());
-            setNullableLong(stmt, 12, operation.transferOperationId());
+
+            if (operation.transferOperationId() != null) stmt.setLong(12, operation.transferOperationId());
+            else stmt.setNull(12, Types.INTEGER);
 
             stmt.executeUpdate();
 
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    long id = generatedKeys.getLong(1);
-                    return findById(id).orElseThrow();
-                } else {
-                    throw new SQLException("Échec de création de l'opération, aucun ID retourné.");
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    long generatedId = keys.getLong(1);
+                    return findById(generatedId).orElseThrow(() ->
+                            new RuntimeException("Erreur lors de la relecture de l'opération créée")
+                    );
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de l'enregistrement de l'opération : " + operation.label(), e);
+            throw new RuntimeException("Erreur lors de la sauvegarde de l'opération", e);
         }
+        throw new RuntimeException("Échec de la génération de l'ID pour Operation");
     }
 
     public Optional<Operation> findById(long id) {
@@ -65,7 +80,7 @@ public class OperationDao {
             stmt.setLong(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapRowToOperation(rs));
+                    return Optional.of(mapResultSetToOperation(rs));
                 }
             }
         } catch (SQLException e) {
@@ -74,24 +89,20 @@ public class OperationDao {
         return Optional.empty();
     }
 
-    public List<Operation> findByBookAndDateRange(long bookId, LocalDate startDate, LocalDate endDate) {
+    public List<Operation> findByBookAndDateRange(long bookId, LocalDate start, LocalDate end) {
         String sql = """
-            SELECT * FROM operation
-            WHERE book_id = ?
-              AND operation_date >= ?
-              AND operation_date <= ?
+            SELECT * FROM operation 
+            WHERE book_id = ? AND operation_date BETWEEN ? AND ?
             ORDER BY operation_date DESC, id DESC
         """;
-
         List<Operation> operations = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setLong(1, bookId);
-            stmt.setString(2, startDate.toString());
-            stmt.setString(3, endDate.toString());
-
+            stmt.setString(2, DateHelper.toSqlDate(start));
+            stmt.setString(3, DateHelper.toSqlDate(end));
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    operations.add(mapRowToOperation(rs));
+                    operations.add(mapResultSetToOperation(rs));
                 }
             }
         } catch (SQLException e) {
@@ -102,28 +113,39 @@ public class OperationDao {
 
     public void update(Operation operation) {
         String sql = """
-            UPDATE operation
-            SET book_id = ?, category_id = ?, payment_method_id = ?, recurrence_rule_id = ?,
+            UPDATE operation SET
+                category_id = ?, payment_method_id = ?, recurrence_rule_id = ?,
                 label = ?, amount = ?, operation_type = ?, status = ?,
                 operation_date = ?, settled_at = ?, notes = ?, transfer_operation_id = ?,
-                updated_at = DATETIME('now')
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         """;
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setLong(1, operation.bookId());
-            setNullableLong(stmt, 2, operation.categoryId());
-            setNullableLong(stmt, 3, operation.paymentMethodId());
-            setNullableLong(stmt, 4, operation.recurrenceRuleId());
-            stmt.setString(5, operation.label());
-            stmt.setLong(6, MoneyHelper.toCents(operation.amount()));
-            stmt.setString(7, operation.operationType().name());
-            stmt.setString(8, operation.status().name());
-            stmt.setString(9, operation.operationDate().toString());
-            stmt.setString(10, operation.settledAt() != null ? operation.settledAt().toString() : null);
-            stmt.setString(11, operation.notes());
-            setNullableLong(stmt, 12, operation.transferOperationId());
-            stmt.setLong(13, operation.id());
+            if (operation.categoryId() != null) stmt.setLong(1, operation.categoryId());
+            else stmt.setNull(1, Types.INTEGER);
+
+            if (operation.paymentMethodId() != null) stmt.setLong(2, operation.paymentMethodId());
+            else stmt.setNull(2, Types.INTEGER);
+
+            if (operation.recurrenceRuleId() != null) {
+                stmt.setLong(3, operation.recurrenceRuleId());
+            } else {
+                stmt.setNull(3, Types.INTEGER);
+            }
+
+            stmt.setString(4, operation.label());
+            stmt.setLong(5, MoneyHelper.toCents(operation.amount()));
+            stmt.setString(6, operation.operationType().name());
+            stmt.setString(7, operation.status().name());
+            stmt.setString(8, DateHelper.toSqlDate(operation.operationDate()));
+            stmt.setString(9, DateHelper.toSqlDate(operation.settledAt()));
+            stmt.setString(10, operation.notes());
+
+            if (operation.transferOperationId() != null) stmt.setLong(11, operation.transferOperationId());
+            else stmt.setNull(11, Types.INTEGER);
+
+            stmt.setLong(12, operation.id());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -141,62 +163,41 @@ public class OperationDao {
         }
     }
 
-    private Operation mapRowToOperation(ResultSet rs) throws SQLException {
-        Long categoryId = rs.getObject("category_id") != null ? rs.getLong("category_id") : null;
-        Long paymentMethodId = rs.getObject("payment_method_id") != null ? rs.getLong("payment_method_id") : null;
-        Long recurrenceRuleId = rs.getObject("recurrence_rule_id") != null ? rs.getLong("recurrence_rule_id") : null;
-        Long transferOpId = rs.getObject("transfer_operation_id") != null ? rs.getLong("transfer_operation_id") : null;
+    private Operation mapResultSetToOperation(ResultSet rs) throws SQLException {
+        long id = rs.getLong("id");
+        long bookId = rs.getLong("book_id");
 
-        // 1. Date métier pure (ex: 2026-10-18)
-        LocalDate operationDate = LocalDate.parse(rs.getString("operation_date").substring(0, 10));
+        Long categoryId = rs.getLong("category_id");
+        if (rs.wasNull()) categoryId = null;
 
-        // 2. Date de pointage (optionnelle)
-        String settledAtRaw = rs.getString("settled_at");
-        LocalDate settledAt = (settledAtRaw != null && !settledAtRaw.isBlank())
-                ? LocalDate.parse(settledAtRaw.substring(0, 10))
-                : null;
+        Long paymentMethodId = rs.getLong("payment_method_id");
+        if (rs.wasNull()) paymentMethodId = null;
 
-        // 3. Horodatages d'audit robustes (gèrent "YYYY-MM-DD" et "YYYY-MM-DD HH:mm:ss")
-        LocalDateTime createdAt = parseTimestamp(rs.getString("created_at"));
-        LocalDateTime updatedAt = parseTimestamp(rs.getString("updated_at"));
+        Long recurrenceRuleId = rs.getLong("recurrence_rule_id");
+        if (rs.wasNull()) recurrenceRuleId = null;
+
+        String label = rs.getString("label");
+        long amountInCents = rs.getLong("amount");
+
+        OperationType type = OperationType.valueOf(rs.getString("operation_type"));
+        OperationStatus status = OperationStatus.valueOf(rs.getString("status"));
+
+        LocalDate operationDate = DateHelper.parseLocalDate(rs.getString("operation_date"));
+        LocalDate settledAt = DateHelper.parseLocalDate(rs.getString("settled_at"));
+
+        LocalDateTime createdAt = DateHelper.parseLocalDateTime(rs.getString("created_at"));
+        LocalDateTime updatedAt = DateHelper.parseLocalDateTime(rs.getString("updated_at"));
+
+        String notes = rs.getString("notes");
+
+        Long transferOpId = rs.getLong("transfer_operation_id");
+        if (rs.wasNull()) transferOpId = null;
 
         return new Operation(
-                rs.getLong("id"),
-                rs.getLong("book_id"),
-                categoryId,
-                paymentMethodId,
-                recurrenceRuleId,
-                rs.getString("label"),
-                MoneyHelper.fromCents(rs.getLong("amount")),
-                OperationType.valueOf(rs.getString("operation_type")),
-                OperationStatus.valueOf(rs.getString("status")),
-                LocalDate.parse(rs.getString("operation_date")),
-                settledAt,
-                rs.getString("notes"),
-                transferOpId,
-                createdAt,
-                updatedAt
+                id, bookId, categoryId, paymentMethodId, recurrenceRuleId,
+                label, MoneyHelper.fromCents(amountInCents),
+                type, status, operationDate, settledAt, notes,
+                transferOpId, createdAt, updatedAt
         );
-    }
-
-    // Méthode de parsing tolérante pour SQLite
-    private LocalDateTime parseTimestamp(String raw) {
-        if (raw == null || raw.isBlank()) {
-            return LocalDateTime.now();
-        }
-        // Si SQLite a stocké "2026-10-18", on complète avec minuit
-        if (raw.length() == 10) {
-            return LocalDate.parse(raw).atStartOfDay();
-        }
-        // Gère le format SQLite standard "YYYY-MM-DD HH:mm:ss"
-        return LocalDateTime.parse(raw.replace(" ", "T"));
-    }
-
-    private void setNullableLong(PreparedStatement stmt, int index, Long value) throws SQLException {
-        if (value != null) {
-            stmt.setLong(index, value);
-        } else {
-            stmt.setNull(index, Types.INTEGER);
-        }
     }
 }
