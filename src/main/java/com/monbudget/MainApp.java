@@ -143,7 +143,7 @@ public class MainApp extends Application {
     private Book resolveInitialBook() {
         List<Book> activeBooks = bookDao.findAllActive();
         if (!activeBooks.isEmpty()) {
-            return activeBooks.get(0);
+            return activeBooks.getFirst();
         }
 
         // Création d'un premier registre par défaut
