@@ -1,10 +1,7 @@
 package com.monbudget;
 
 import com.monbudget.controller.DashboardController;
-import com.monbudget.dao.BookDao;
-import com.monbudget.dao.CategoryDao;
-import com.monbudget.dao.DatabaseManager;
-import com.monbudget.dao.OperationDao;
+import com.monbudget.dao.*;
 import com.monbudget.model.Book;
 import com.monbudget.service.BalanceService;
 import com.monbudget.service.OperationService;
@@ -35,6 +32,7 @@ public class MainApp extends Application {
     private BookDao bookDao;
     private CategoryDao categoryDao;
     private OperationDao operationDao;
+    private RecurrenceRuleDao recurrenceRuleDao;
     private BalanceService balanceService;
     private OperationService operationService;
 
@@ -93,6 +91,7 @@ public class MainApp extends Application {
                     operationDao,
                     categoryDao,
                     bookDao,
+                    recurrenceRuleDao,
                     activeBook
             );
 
