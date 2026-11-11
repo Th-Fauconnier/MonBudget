@@ -8,9 +8,9 @@ import com.monbudget.model.Book;
 import com.monbudget.model.Category;
 import com.monbudget.model.Operation;
 import com.monbudget.model.enums.OperationStatus;
-import com.monbudget.service.BalanceService;
-import com.monbudget.service.BalanceSummary;
-import com.monbudget.service.OperationService;
+import com.monbudget.service.*;
+import com.monbudget.util.PeriodUtils;
+import com.monbudget.view.cell.*;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -21,7 +21,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
@@ -35,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.function.Consumer;
@@ -45,6 +43,7 @@ public class DashboardController {
     private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.FRANCE);
 
     @FXML private ComboBox<Book> bookComboBox;
+    @FXML private ComboBox<String> periodPresetCombo;
     @FXML private DatePicker startDatePicker;
     @FXML private DatePicker endDatePicker;
     @FXML private ProgressIndicator loadingIndicator;
@@ -64,7 +63,7 @@ public class DashboardController {
     @FXML private TableColumn<Operation, OperationStatus> statusColumn;
     @FXML private TableColumn<Operation, Void> actionColumn;
 
-    private BalanceService balanceService;
+    private DashboardService dashboardService;
     private OperationService operationService;
     private OperationDao operationDao;
     private CategoryDao categoryDao;
@@ -73,19 +72,13 @@ public class DashboardController {
     private Book currentBook;
 
     private final Map<Long, String> categoryNamesMap = new HashMap<>();
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    private boolean isUpdatingDates = false;
 
     private static final Logger logger = LoggerFactory.getLogger( DashboardController.class );
 
-    @FXML
-    public void initialize() {
-        setupBookComboBox();
-        setupTableColumns();
-        setupDefaultDates();
-    }
-
     public void initData(
-            BalanceService balanceService,
+            DashboardService dashboardService,
             OperationService operationService,
             OperationDao operationDao,
             CategoryDao categoryDao,
@@ -93,7 +86,7 @@ public class DashboardController {
             RecurrenceRuleDao recurrenceRuleDao,
             Book initialBook
     ) {
-        this.balanceService = balanceService;
+        this.dashboardService = dashboardService;
         this.operationService = operationService;
         this.operationDao = operationDao;
         this.categoryDao = categoryDao;
@@ -103,6 +96,83 @@ public class DashboardController {
 
         refreshCategoryCache();
         refreshBookList(initialBook);
+    }
+
+    @FXML
+    public void initialize() {
+        setupBookComboBox();
+        setupTableColumns();
+        setupDefaultDates();
+
+        // Initialiser les choix du ComboBox de préselection de periode
+        periodPresetCombo.getItems().addAll(
+                "Mois en cours",
+                "Année en cours"
+        );
+
+        // Gérer le comportement lors du choix d'une présélection
+        periodPresetCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || isUpdatingDates) return;
+            LocalDate[] dates = PeriodUtils.getPeriodForPreset(newVal);
+            isUpdatingDates = true;
+            startDatePicker.setValue(dates[0]);
+            endDatePicker.setValue(dates[1]);
+            isUpdatingDates = false;
+        });
+
+        // Ajustement automatique des valeurs pour éviter les incohérences
+        startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (isUpdatingDates) return;
+            if (newVal != null && endDatePicker.getValue() != null && newVal.isAfter(endDatePicker.getValue())) {
+                isUpdatingDates = true;
+                endDatePicker.setValue(newVal);
+                isUpdatingDates = false;
+            }
+        });
+
+        endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (isUpdatingDates) return;
+            if (newVal != null && startDatePicker.getValue() != null && newVal.isBefore(startDatePicker.getValue())) {
+                isUpdatingDates = true;
+                startDatePicker.setValue(newVal);
+                isUpdatingDates = false;
+            }
+        });
+    }
+
+    @FXML
+    private void handlePrevMonth() {
+        shiftPeriod(-1, java.time.temporal.ChronoUnit.MONTHS);
+    }
+
+    @FXML
+    private void handleNextMonth() {
+        shiftPeriod(1, java.time.temporal.ChronoUnit.MONTHS);
+    }
+
+    @FXML
+    private void handlePrevYear() {
+        shiftPeriod(-1, java.time.temporal.ChronoUnit.YEARS);
+    }
+
+    @FXML
+    private void handleNextYear() {
+        shiftPeriod(1, java.time.temporal.ChronoUnit.YEARS);
+    }
+
+    private void shiftPeriod(long amount, java.time.temporal.TemporalUnit unit) {
+        LocalDate current = startDatePicker.getValue() != null ? startDatePicker.getValue() : LocalDate.now();
+        LocalDate target = current.plus(amount, unit);
+
+        isUpdatingDates = true;
+        if (unit == java.time.temporal.ChronoUnit.MONTHS) {
+            startDatePicker.setValue(target.withDayOfMonth(1));
+            endDatePicker.setValue(target.withDayOfMonth(target.lengthOfMonth()));
+        } else {
+            startDatePicker.setValue(target.withDayOfYear(1));
+            endDatePicker.setValue(target.withDayOfYear(target.lengthOfYear()));
+        }
+        isUpdatingDates = false;
     }
 
     private void setupBookComboBox() {
@@ -171,89 +241,54 @@ public class DashboardController {
         startDatePicker.setValue(now.with(TemporalAdjusters.firstDayOfMonth()));
         endDatePicker.setValue(now.with(TemporalAdjusters.lastDayOfMonth()));
 
-        startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> loadDashboardDataAsync());
-        endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> loadDashboardDataAsync());
     }
 
     private void setupTableColumns() {
+        // Date
         dateColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().operationDate()));
-        dateColumn.setCellFactory(col -> new TableCell<>() {
-            { getStyleClass().add("col-center"); }
-            @Override
-            protected void updateItem(LocalDate date, boolean empty) {
-                super.updateItem(date, empty);
-                setText(empty || date == null ? null : date.format(DATE_FORMATTER));
-            }
-        });
+        dateColumn.setCellFactory(col -> new DateTableCell<>());
 
+        // Libellé
         labelColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().label()));
 
+        // Catégorie
         categoryColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().categoryId()));
-        categoryColumn.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(Long categoryId, boolean empty) {
-                super.updateItem(categoryId, empty);
-                setText(empty || categoryId == null ? "Sans catégorie" : categoryNamesMap.getOrDefault(categoryId, "Inconnue"));
-            }
-        });
+        categoryColumn.setCellFactory(col -> new CategoryTableCell<>(categoryNamesMap));
 
+        // Montant
         amountColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().amount()));
-        amountColumn.setCellFactory(col -> new TableCell<>() {
-            { getStyleClass().add("money-cell"); }
-            @Override
-            protected void updateItem(BigDecimal amount, boolean empty) {
-                super.updateItem(amount, empty);
-                getStyleClass().removeAll("money-cell-expense", "money-cell-income");
-                if (empty || amount == null) {
-                    setText(null);
-                } else {
-                    setText(CURRENCY_FORMAT.format(amount));
-                    getStyleClass().add(amount.compareTo(BigDecimal.ZERO) < 0 ? "money-cell-expense" : "money-cell-income");
-                }
-            }
-        });
+        amountColumn.setCellFactory(col -> new CurrencyTableCell<>());
 
+        // Statut
         statusColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().status()));
-        statusColumn.setCellFactory(col -> new TableCell<>() {
-            { getStyleClass().add("col-center"); }
-            @Override
-            protected void updateItem(OperationStatus status, boolean empty) {
-                super.updateItem(status, empty);
-                if (empty || status == null) {
-                    setGraphic(null);
-                } else {
-                    Label badge = new Label(status == OperationStatus.SETTLED ? "RÉALISÉ" : "EN ATTENTE");
-                    badge.getStyleClass().addAll("badge-status", status == OperationStatus.SETTLED ? "badge-settled" : "badge-planned");
-                    setGraphic(badge);
-                }
+        statusColumn.setCellFactory(col -> new OperationStatusCell());
+
+        // Action
+        actionColumn.setCellFactory(col -> new OperationActionCell(op -> {
+            operationService.markAsSettledToday(op);
+            loadDashboardDataAsync();
+        }));
+    }
+
+    @FXML
+    private void handleApplyFilters() {
+        Book selectedBook = bookComboBox.getValue();
+        LocalDate startDate = startDatePicker.getValue();
+        LocalDate endDate = endDatePicker.getValue();
+
+        // La validation s'exécute uniquement ici au clic
+        boolean isValid = validateFilters(selectedBook, startDate, endDate, errorMsg -> {
+            if (!errorMsg.isEmpty()) {
+                showError("Erreur de filtre",new IllegalArgumentException( errorMsg ) ); // Méthode d'affichage d'alerte
             }
         });
 
-        actionColumn.setCellFactory(col -> new TableCell<>() {
-            { getStyleClass().add("col-center"); }
-            private final Button pointButton = new Button("Pointer");
-            {
-                pointButton.getStyleClass().addAll("btn", "btn-default", "btn-sm");
-                pointButton.setOnAction(e -> {
-                    Operation op = getTableView().getItems().get(getIndex());
-                    if (op.status() == OperationStatus.PLANNED) {
-                        operationService.markAsSettledToday(op);
-                        loadDashboardDataAsync();
-                    }
-                });
-            }
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    Operation op = getTableView().getItems().get(getIndex());
-                    pointButton.setDisable(op.status() == OperationStatus.SETTLED);
-                    setGraphic(pointButton);
-                }
-            }
-        });
+        if (!isValid) {
+            return; // Bloque le rechargement si les critères sont invalides
+        }
+
+        // Exécute le chargement de données
+        loadDashboardDataAsync();
     }
 
     @FXML
@@ -271,17 +306,7 @@ public class DashboardController {
 
         if (loadingIndicator != null) loadingIndicator.setVisible(true);
 
-        Task<DashboardPayload> task = new Task<>() {
-            @Override
-            protected DashboardPayload call() {
-                List<Operation> operations = operationDao.findByBookAndDateRange(currentBook.id(), start, end);
-                BalanceSummary summary = balanceService.computeSummary(currentBook, start, end);
-                XYChart.Series<String, Number> series = balanceService.buildBalanceHistorySeries(currentBook, start, end);
-                List<PieChart.Data> pieData = balanceService.buildExpenseCategoryPieData(operations, categoryNamesMap);
-
-                return new DashboardPayload(operations, summary, series, pieData);
-            }
-        };
+        Task<DashboardPayload> task = dashboardService.createLoadTask(currentBook, start, end, categoryNamesMap);
 
         task.setOnSucceeded(e -> {
             DashboardPayload payload = task.getValue();
@@ -452,10 +477,4 @@ public class DashboardController {
         alert.showAndWait();
     }
 
-    private record DashboardPayload(
-            List<Operation> operations,
-            BalanceSummary summary,
-            XYChart.Series<String, Number> historySeries,
-            List<PieChart.Data> pieData
-    ) {}
 }
