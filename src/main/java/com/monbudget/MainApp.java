@@ -4,6 +4,7 @@ import com.monbudget.controller.DashboardController;
 import com.monbudget.dao.*;
 import com.monbudget.model.Book;
 import com.monbudget.service.BalanceService;
+import com.monbudget.service.DashboardService;
 import com.monbudget.service.OperationService;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -35,7 +36,7 @@ public class MainApp extends Application {
     private CategoryDao categoryDao;
     private OperationDao operationDao;
     private RecurrenceRuleDao recurrenceRuleDao;
-    private BalanceService balanceService;
+    private DashboardService dashboardService;
     private OperationService operationService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger( MainApp.class );
@@ -60,7 +61,7 @@ public class MainApp extends Application {
             this.recurrenceRuleDao = new RecurrenceRuleDao(dbConnection);
 
             // 4. Initialisation des Services métier
-            this.balanceService = new BalanceService(operationDao);
+            this.dashboardService = new DashboardService(operationDao, new BalanceService( operationDao ) );
             this.operationService = new OperationService(operationDao);
 
         } catch (Throwable t) {
@@ -92,7 +93,7 @@ public class MainApp extends Application {
             // Injection des dépendances dans le contrôleur principal
             DashboardController controller = loader.getController();
             controller.initData(
-                    balanceService,
+                    dashboardService,
                     operationService,
                     operationDao,
                     categoryDao,
