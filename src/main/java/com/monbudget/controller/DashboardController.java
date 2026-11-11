@@ -17,20 +17,13 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -75,8 +68,6 @@ public class DashboardController {
     private final Map<Long, String> categoryNamesMap = new HashMap<>();
 
     private boolean isUpdatingDates = false;
-
-    private static final Logger logger = LoggerFactory.getLogger( DashboardController.class );
 
     public void initData(
             DashboardService dashboardService,
