@@ -63,6 +63,7 @@ public class DashboardController {
     @FXML private TableColumn<Operation, OperationStatus> statusColumn;
     @FXML private TableColumn<Operation, Void> actionColumn;
 
+    private DialogService dialogService;
     private DashboardService dashboardService;
     private OperationService operationService;
     private OperationDao operationDao;
@@ -80,6 +81,7 @@ public class DashboardController {
     public void initData(
             DashboardService dashboardService,
             OperationService operationService,
+            DialogService dialogService,
             OperationDao operationDao,
             CategoryDao categoryDao,
             BookDao bookDao,
@@ -88,6 +90,7 @@ public class DashboardController {
     ) {
         this.dashboardService = dashboardService;
         this.operationService = operationService;
+        this.dialogService = dialogService;
         this.operationDao = operationDao;
         this.categoryDao = categoryDao;
         this.bookDao = bookDao;
@@ -340,53 +343,18 @@ public class DashboardController {
 
     @FXML
     public void handleNewBook() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/monbudget/views/book-dialog-view.fxml"));
-            Parent root = loader.load();
-
-            BookDialogController controller = loader.getController();
-            controller.initData(bookDao);
-
-            Stage stage = new Stage();
-            stage.setTitle("Nouveau livre de comptes");
-            stage.initModality(Modality.WINDOW_MODAL);
-            stage.initOwner(bookComboBox.getScene().getWindow());
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-
-            Book created = controller.getCreatedBook();
-            if (created != null) {
-                refreshBookList(created);
-            }
-        } catch (Exception ex) {
-            logger.error("Impossible d'ouvrir le dialogue de création de compte : {}", ex.getMessage(), ex);
-            showError("Impossible d'ouvrir le dialogue de création de compte", ex);
+        Book created = dialogService.openBookDialog(bookComboBox.getScene().getWindow(), bookDao);
+        if (created != null) {
+            refreshBookList(created);
         }
     }
 
     @FXML
     public void handleNewCategory() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/monbudget/views/category-dialog-view.fxml"));
-            Parent root = loader.load();
-
-            CategoryDialogController controller = loader.getController();
-            controller.initData(categoryDao);
-
-            Stage stage = new Stage();
-            stage.setTitle("Nouvelle catégorie");
-            stage.initModality(Modality.WINDOW_MODAL);
-            stage.initOwner(bookComboBox.getScene().getWindow());
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-
-            if (controller.getCreatedCategory() != null) {
-                refreshCategoryCache();
-                loadDashboardDataAsync();
-            }
-        } catch (Exception ex) {
-            logger.error("Impossible d'ouvrir le dialogue de création de catégorie : {}", ex.getMessage(), ex);
-            showError("Impossible d'ouvrir le dialogue de création de catégorie", ex);
+        Category created = dialogService.openCategoryDialog(bookComboBox.getScene().getWindow(), categoryDao);
+        if (created != null) {
+            refreshCategoryCache();
+            loadDashboardDataAsync();
         }
     }
 
@@ -420,26 +388,15 @@ public class DashboardController {
     }
 
     private void openOperationDialog(Operation operationToEdit) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/monbudget/views/operation-dialog-view.fxml"));
-            Parent root = loader.load();
-
-            OperationDialogController controller = loader.getController();
-            controller.initData(currentBook, operationToEdit, categoryDao, operationDao, recurrenceRuleDao);
-
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle(operationToEdit == null ? "Nouvelle opération" : "Modifier une opération");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(operationsTable.getScene().getWindow());
-            dialogStage.setScene(new Scene(root));
-            dialogStage.showAndWait();
-
-            loadDashboardDataAsync();
-
-        } catch (Exception ex) {
-            logger.error("Impossible d'ouvrir le formulaire d'opération : {}", ex.getMessage(), ex);
-            showError("Impossible d'ouvrir le formulaire d'opération", ex);
-        }
+        dialogService.openOperationDialog(
+                operationsTable.getScene().getWindow(),
+                currentBook,
+                operationToEdit,
+                categoryDao,
+                operationDao,
+                recurrenceRuleDao
+        );
+        loadDashboardDataAsync();
     }
 
     private void refreshCategoryCache() {

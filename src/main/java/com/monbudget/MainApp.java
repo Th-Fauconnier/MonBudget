@@ -5,6 +5,7 @@ import com.monbudget.dao.*;
 import com.monbudget.model.Book;
 import com.monbudget.service.BalanceService;
 import com.monbudget.service.DashboardService;
+import com.monbudget.service.DialogService;
 import com.monbudget.service.OperationService;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -38,6 +39,7 @@ public class MainApp extends Application {
     private RecurrenceRuleDao recurrenceRuleDao;
     private DashboardService dashboardService;
     private OperationService operationService;
+    private DialogService dialogService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger( MainApp.class );
 
@@ -95,6 +97,7 @@ public class MainApp extends Application {
             controller.initData(
                     dashboardService,
                     operationService,
+                    dialogService,
                     operationDao,
                     categoryDao,
                     bookDao,
