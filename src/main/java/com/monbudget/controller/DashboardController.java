@@ -65,8 +65,6 @@ public class DashboardController {
     private RecurrenceRuleDao recurrenceRuleDao;
     private Book currentBook;
 
-    private boolean isUpdatingDates = false;
-
     public void initData(
             DashboardService dashboardService,
             OperationService operationService,
@@ -96,75 +94,28 @@ public class DashboardController {
         setupTableColumns();
         setupDefaultDates();
 
-        // Initialiser les choix du ComboBox de préselection de periode
-        periodPresetCombo.getItems().addAll(
-                "Mois en cours",
-                "Année en cours"
-        );
-
-        // Gérer le comportement lors du choix d'une présélection
-        periodPresetCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null || isUpdatingDates) return;
-            LocalDate[] dates = PeriodUtils.getPeriodForPreset(newVal);
-            isUpdatingDates = true;
-            startDatePicker.setValue(dates[0]);
-            endDatePicker.setValue(dates[1]);
-            isUpdatingDates = false;
-        });
-
-        // Ajustement automatique des valeurs pour éviter les incohérences
-        startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (isUpdatingDates) return;
-            if (newVal != null && endDatePicker.getValue() != null && newVal.isAfter(endDatePicker.getValue())) {
-                isUpdatingDates = true;
-                endDatePicker.setValue(newVal);
-                isUpdatingDates = false;
-            }
-        });
-
-        endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (isUpdatingDates) return;
-            if (newVal != null && startDatePicker.getValue() != null && newVal.isBefore(startDatePicker.getValue())) {
-                isUpdatingDates = true;
-                startDatePicker.setValue(newVal);
-                isUpdatingDates = false;
-            }
-        });
+        // Configuration centralisée des dates via PeriodUtils
+        PeriodUtils.setupDateBindings(periodPresetCombo, startDatePicker, endDatePicker);
     }
 
     @FXML
     private void handlePrevMonth() {
-        shiftPeriod(-1, java.time.temporal.ChronoUnit.MONTHS);
+        PeriodUtils.shiftPeriod(-1, java.time.temporal.ChronoUnit.MONTHS, startDatePicker, endDatePicker);
     }
 
     @FXML
     private void handleNextMonth() {
-        shiftPeriod(1, java.time.temporal.ChronoUnit.MONTHS);
+        PeriodUtils.shiftPeriod(1, java.time.temporal.ChronoUnit.MONTHS, startDatePicker, endDatePicker);
     }
 
     @FXML
     private void handlePrevYear() {
-        shiftPeriod(-1, java.time.temporal.ChronoUnit.YEARS);
+        PeriodUtils.shiftPeriod(-1, java.time.temporal.ChronoUnit.YEARS, startDatePicker, endDatePicker);
     }
 
     @FXML
     private void handleNextYear() {
-        shiftPeriod(1, java.time.temporal.ChronoUnit.YEARS);
-    }
-
-    private void shiftPeriod(long amount, java.time.temporal.TemporalUnit unit) {
-        LocalDate current = startDatePicker.getValue() != null ? startDatePicker.getValue() : LocalDate.now();
-        LocalDate target = current.plus(amount, unit);
-
-        isUpdatingDates = true;
-        if (unit == java.time.temporal.ChronoUnit.MONTHS) {
-            startDatePicker.setValue(target.withDayOfMonth(1));
-            endDatePicker.setValue(target.withDayOfMonth(target.lengthOfMonth()));
-        } else {
-            startDatePicker.setValue(target.withDayOfYear(1));
-            endDatePicker.setValue(target.withDayOfYear(target.lengthOfYear()));
-        }
-        isUpdatingDates = false;
+        PeriodUtils.shiftPeriod(1, java.time.temporal.ChronoUnit.YEARS, startDatePicker, endDatePicker);
     }
 
     private void setupBookComboBox() {
