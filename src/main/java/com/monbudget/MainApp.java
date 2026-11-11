@@ -63,7 +63,11 @@ public class MainApp extends Application {
             this.recurrenceRuleDao = new RecurrenceRuleDao(dbConnection);
 
             // 4. Initialisation des Services métier
-            this.dashboardService = new DashboardService(operationDao, new BalanceService( operationDao ) );
+            this.dashboardService = new DashboardService(
+                    operationDao,
+                    new BalanceService( operationDao ),
+                    categoryDao
+            );
             this.dialogService = new DialogService();
             this.operationService = new OperationService(operationDao);
 
@@ -135,7 +139,7 @@ public class MainApp extends Application {
         try {
             if (dbConnection != null && !dbConnection.isClosed()) {
                 dbConnection.close();
-                System.out.println("Connexion SQLite fermée proprement.");
+                LOGGER.info("Connexion SQLite fermée proprement.");
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

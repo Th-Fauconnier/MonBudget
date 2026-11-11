@@ -65,8 +65,6 @@ public class DashboardController {
     private RecurrenceRuleDao recurrenceRuleDao;
     private Book currentBook;
 
-    private final Map<Long, String> categoryNamesMap = new HashMap<>();
-
     private boolean isUpdatingDates = false;
 
     public void initData(
@@ -88,7 +86,7 @@ public class DashboardController {
         this.recurrenceRuleDao = recurrenceRuleDao;
         this.currentBook = initialBook;
 
-        refreshCategoryCache();
+        dashboardService.refreshCategoryCache();
         refreshBookList(initialBook);
     }
 
@@ -247,7 +245,7 @@ public class DashboardController {
 
         // Catégorie
         categoryColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().categoryId()));
-        categoryColumn.setCellFactory(col -> new CategoryTableCell<>(categoryNamesMap));
+        categoryColumn.setCellFactory(col -> new CategoryTableCell<>( dashboardService.getCategoryNamesMap() ));
 
         // Montant
         amountColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().amount()));
@@ -300,7 +298,7 @@ public class DashboardController {
 
         if (loadingIndicator != null) loadingIndicator.setVisible(true);
 
-        Task<DashboardPayload> task = dashboardService.createLoadTask(currentBook, start, end, categoryNamesMap);
+        Task<DashboardPayload> task = dashboardService.createLoadTask( currentBook, start, end, dashboardService.getCategoryNamesMap() );
 
         task.setOnSucceeded(e -> {
             DashboardPayload payload = task.getValue();
@@ -344,7 +342,7 @@ public class DashboardController {
     public void handleNewCategory() {
         Category created = dialogService.openCategoryDialog(bookComboBox.getScene().getWindow(), categoryDao);
         if (created != null) {
-            refreshCategoryCache();
+            dashboardService.refreshCategoryCache();
             loadDashboardDataAsync();
         }
     }
@@ -388,13 +386,6 @@ public class DashboardController {
                 recurrenceRuleDao
         );
         loadDashboardDataAsync();
-    }
-
-    private void refreshCategoryCache() {
-        categoryNamesMap.clear();
-        for (Category cat : categoryDao.findAll()) {
-            categoryNamesMap.put(cat.id(), cat.name());
-        }
     }
 
     private void showError(String message, Throwable error) {
