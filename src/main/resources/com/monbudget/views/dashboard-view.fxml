@@ -47,12 +47,21 @@
 
             <!-- Barre de filtrage par période -->
             <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Button text="« Année" onAction="#handlePrevYear"/>
+                <Button text="« Mois" onAction="#handlePrevMonth"/>
+
+                <Label styleClass="text-muted" text="Pré-Sel"/>
+                <ComboBox fx:id="periodPresetCombo" promptText="Présélection..." />
                 <Label styleClass="text-muted" text="Période du :"/>
-                <DatePicker fx:id="startDatePicker" prefWidth="130.0"/>
+                <DatePicker fx:id="startDatePicker" />
                 <Label styleClass="text-muted" text="au :"/>
-                <DatePicker fx:id="endDatePicker" prefWidth="130.0"/>
-                <Button onAction="#loadDashboardDataAsync" styleClass="btn, btn-default, btn-sm"
-                        text="🔄 Actualiser"/>
+                <DatePicker fx:id="endDatePicker" />
+
+                <Button text="Mois »" onAction="#handleNextMonth"/>
+                <Button text="Année »" onAction="#handleNextYear"/>
+
+                <Button onAction="#handleApplyFilters" styleClass="btn, btn-default, btn-sm"
+                        text="🔄 Appliquer"/>
             </HBox>
         </VBox>
     </top>
