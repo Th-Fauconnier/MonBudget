@@ -1,8 +1,11 @@
 package com.monbudget.service;
 
+import com.monbudget.dao.CategoryDao;
 import com.monbudget.dao.OperationDao;
 import com.monbudget.model.Book;
+import com.monbudget.model.Category;
 import com.monbudget.model.Operation;
+import com.monbudget.model.enums.OperationType;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.chart.PieChart;
@@ -25,6 +28,7 @@ class DashboardServiceTest {
 
     private OperationDao operationDao;
     private BalanceService balanceService;
+    private CategoryDao categoryDao;
     private DashboardService dashboardService;
 
     @BeforeAll
@@ -40,12 +44,12 @@ class DashboardServiceTest {
     void setUp() {
         operationDao = mock(OperationDao.class);
         balanceService = mock(BalanceService.class);
-        dashboardService = new DashboardService(operationDao, balanceService);
+        categoryDao = mock(CategoryDao.class);
+        dashboardService = new DashboardService(operationDao, balanceService, categoryDao);
     }
 
     @Test
     void testCreateLoadTaskPopulatesPayloadCorrectly() throws Exception {
-        // Utilisation d'un constructeur direct pour fournir un ID non-null (ex: 1L)
         Book book = new Book(
                 1L,
                 "Personnel",
@@ -90,4 +94,16 @@ class DashboardServiceTest {
         verify(balanceService).buildExpenseCategoryPieData(mockOperations, categoryNamesMap);
     }
 
+    @Test
+    void testRefreshCategoryCache() {
+        Category cat1 = new Category(1L, null, "Alimentation", OperationType.EXPENSE, "#000000", "icon", false);
+        when(categoryDao.findAll()).thenReturn(List.of(cat1));
+
+        dashboardService.refreshCategoryCache();
+
+        Map<Long, String> cache = dashboardService.getCategoryNamesMap();
+        assertEquals(1, cache.size());
+        assertEquals("Alimentation", cache.get(1L));
+        verify(categoryDao).findAll();
+    }
 }
