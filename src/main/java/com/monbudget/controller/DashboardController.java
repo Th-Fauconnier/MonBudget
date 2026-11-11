@@ -9,6 +9,7 @@ import com.monbudget.model.Category;
 import com.monbudget.model.Operation;
 import com.monbudget.model.enums.OperationStatus;
 import com.monbudget.service.*;
+import com.monbudget.util.DashboardValidator;
 import com.monbudget.util.PeriodUtils;
 import com.monbudget.view.cell.*;
 import javafx.beans.property.SimpleObjectProperty;
@@ -36,7 +37,6 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.function.Consumer;
 
 public class DashboardController {
 
@@ -277,7 +277,7 @@ public class DashboardController {
         LocalDate endDate = endDatePicker.getValue();
 
         // La validation s'exécute uniquement ici au clic
-        boolean isValid = validateFilters(selectedBook, startDate, endDate, errorMsg -> {
+        boolean isValid = DashboardValidator.validateFilters(selectedBook, startDate, endDate, errorMsg -> {
             if (!errorMsg.isEmpty()) {
                 showError("Erreur de filtre",new IllegalArgumentException( errorMsg ) ); // Méthode d'affichage d'alerte
             }
@@ -293,7 +293,7 @@ public class DashboardController {
 
     @FXML
     public void loadDashboardDataAsync() {
-        if (!validateFilters(currentBook, startDatePicker.getValue(), endDatePicker.getValue(), msg -> {
+        if (!DashboardValidator.validateFilters(currentBook, startDatePicker.getValue(), endDatePicker.getValue(), msg -> {
             if (!msg.isEmpty()) {
                 showError("Paramètres de filtre invalides", new IllegalArgumentException(msg));
             }
@@ -336,26 +336,6 @@ public class DashboardController {
         Thread worker = new Thread(task);
         worker.setDaemon(true);
         worker.start();
-    }
-
-    /**
-     * Méthode de validation pure des filtres du dashboard, testable sans JavaFX.
-     */
-    protected boolean validateFilters(Book book, LocalDate startDate, LocalDate endDate, Consumer<String> errorHandler) {
-        if (book == null) {
-            errorHandler.accept("Veuillez sélectionner un livre de comptes.");
-            return false;
-        }
-        if (startDate == null || endDate == null) {
-            errorHandler.accept("Les dates de début et de fin sont obligatoires.");
-            return false;
-        }
-        if (startDate.isAfter(endDate)) {
-            errorHandler.accept("La date de début ne peut pas être postérieure à la date de fin.");
-            return false;
-        }
-        errorHandler.accept("");
-        return true;
     }
 
     @FXML
