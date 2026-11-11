@@ -64,6 +64,7 @@ public class MainApp extends Application {
 
             // 4. Initialisation des Services métier
             this.dashboardService = new DashboardService(operationDao, new BalanceService( operationDao ) );
+            this.dialogService = new DialogService();
             this.operationService = new OperationService(operationDao);
 
         } catch (Throwable t) {
