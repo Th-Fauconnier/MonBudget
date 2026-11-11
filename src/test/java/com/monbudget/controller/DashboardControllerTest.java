@@ -1,6 +1,7 @@
 package com.monbudget.controller;
 
 import com.monbudget.model.Book;
+import com.monbudget.util.DashboardValidator; // Import du validateur extrait
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +25,8 @@ class DashboardControllerTest {
     @Test
     void testValidateFilters_NullBook() {
         StringBuilder errorMsg = new StringBuilder();
-        boolean isValid = controller.validateFilters(null, LocalDate.now(), LocalDate.now(), errorMsg::append);
+        // Appel via DashboardValidator
+        boolean isValid = DashboardValidator.validateFilters(null, LocalDate.now(), LocalDate.now(), errorMsg::append);
 
         assertFalse(isValid);
         assertEquals("Veuillez sélectionner un livre de comptes.", errorMsg.toString());
@@ -33,7 +35,8 @@ class DashboardControllerTest {
     @Test
     void testValidateFilters_NullDates() {
         StringBuilder errorMsg = new StringBuilder();
-        boolean isValid = controller.validateFilters(validBook, null, LocalDate.now(), errorMsg::append);
+        // Appel via DashboardValidator
+        boolean isValid = DashboardValidator.validateFilters(validBook, null, LocalDate.now(), errorMsg::append);
 
         assertFalse(isValid);
         assertEquals("Les dates de début et de fin sont obligatoires.", errorMsg.toString());
@@ -44,7 +47,8 @@ class DashboardControllerTest {
         StringBuilder errorMsg = new StringBuilder();
         LocalDate start = LocalDate.of(2026, 1, 10);
         LocalDate end = LocalDate.of(2026, 1, 1);
-        boolean isValid = controller.validateFilters(validBook, start, end, errorMsg::append);
+        // Appel via DashboardValidator
+        boolean isValid = DashboardValidator.validateFilters(validBook, start, end, errorMsg::append);
 
         assertFalse(isValid);
         assertEquals("La date de début ne peut pas être postérieure à la date de fin.", errorMsg.toString());
@@ -55,7 +59,8 @@ class DashboardControllerTest {
         StringBuilder errorMsg = new StringBuilder();
         LocalDate start = LocalDate.of(2026, 1, 1);
         LocalDate end = LocalDate.of(2026, 1, 10);
-        boolean isValid = controller.validateFilters(validBook, start, end, errorMsg::append);
+        // Appel via DashboardValidator
+        boolean isValid = DashboardValidator.validateFilters(validBook, start, end, errorMsg::append);
 
         assertTrue(isValid);
         assertEquals("", errorMsg.toString());
